@@ -55,9 +55,14 @@
                 </div>
 
                 <div class="bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div>
-                        <h3 class="text-[10px] font-black uppercase tracking-wider text-gray-400">Main Deck</h3>
-                        <span class="text-sm font-black text-gray-800"><span id="mainCount">0</span> <span class="text-xs text-gray-400 font-normal">/ 60 Cards</span></span>
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <h3 class="text-[10px] font-black uppercase tracking-wider text-gray-400">Main Deck</h3>
+                            <span class="text-sm font-black text-gray-800"><span id="mainCount">0</span> <span class="text-xs text-gray-400 font-normal">/ 60 Cards</span></span>
+                        </div>
+                        <button id="sortBtn" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-sm transition">
+                            <i class="fa-solid fa-arrow-down-a-z text-[10px]"></i> Sort Deck
+                        </button>
                     </div>
                     <div class="flex items-center gap-2 sm:justify-end">
                         <div class="bg-orange-50 border border-orange-100 px-2.5 py-1 rounded-md flex items-center gap-1.5 min-w-[55px] justify-center" title="Monsters">
@@ -76,7 +81,7 @@
                 </div>
 
                 <div>
-                    <div id="mainDeckGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                    <div id="mainDeckGrid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
                         </div>
                 </div>
 
@@ -94,6 +99,7 @@
             </section>
 
         </div>
+    <div id="fixedCardPreview" class="fixed bottom-6 right-6 w-[280px] aspect-[321/468] z-50 rounded-2xl shadow-2xl border-4 border-white bg-gray-50 overflow-hidden pointer-events-none opacity-0 transition-opacity duration-200"></div>
     </div>
 
     <script>
@@ -108,6 +114,7 @@
         async function searchCards() {
             const query = document.getElementById('searchInput').value.trim();
             const resultsPanel = document.getElementById('searchResults');
+            const targetType = document.getElementById('targetDeck').value; // Get current target deck type
             
             if (!query) return;
             resultsPanel.innerHTML = '<p class="text-xs text-gray-400 col-span-2 text-center py-8">Searching database...</p>';
@@ -123,7 +130,23 @@
                     return;
                 }
 
-                const matches = data.data.slice(0, 20);
+                // --- EXTRA DECK FILTERING LOGIC ---
+                let filteredData = data.data;
+                
+                if (targetType === 'extra') {
+                    const validExtraDeckTypes = ['fusion monster', 'synchro monster', 'xyz monster', 'link monster'];
+                    filteredData = filteredData.filter(card => 
+                        card.type && validExtraDeckTypes.some(type => card.type.toLowerCase().includes(type))
+                    );
+                }
+
+                if (filteredData.length === 0) {
+                    resultsPanel.innerHTML = '<p class="text-xs text-amber-400 col-span-2 text-center py-8">No matching Extra Deck cards found.</p>';
+                    return;
+                }
+                // ----------------------------------
+
+                const matches = filteredData.slice(0, 20);
                 matches.forEach(card => {
                     const cardId = card.id;
                     const cardName = card.name;
@@ -137,6 +160,9 @@
                         superType = 'Spell';
                     } else if (card.type.toLowerCase().includes('trap')) {
                         superType = 'Trap';
+                    } else {
+                        // Keeps specific types like 'XYZ Monster', 'Synchro Monster', etc.
+                        superType = card.type; 
                     }
 
                     const cardDiv = document.createElement('div');
@@ -159,9 +185,21 @@
         function addCardToDeck(id, name, imagesList, superType) {
             const targetType = document.getElementById('targetDeck').value; 
             
+            // 1. Deck size capacity checks
             if (localDeck.main.length >= 60 && targetType === 'main') return alert("Main deck limit reached.");
             if (localDeck.extra.length >= 15 && targetType === 'extra') return alert("Extra deck limit reached.");
             if (localDeck.side.length >= 15 && targetType === 'side') return alert("Side deck limit reached.");
+
+            // 2. Count total global copies of this card (Main + Extra + Side)
+            const mainCopies = localDeck.main.filter(card => card.id === id).length;
+            const extraCopies = localDeck.extra.filter(card => card.id === id).length;
+            const sideCopies = localDeck.side.filter(card => card.id === id).length;
+            const totalCopies = mainCopies + extraCopies + sideCopies;
+
+            // 3. Enforce the 3-copy limit rule
+            if (totalCopies >= 3) {
+                return alert(`You cannot add more than 3 copies of "${name}" to your deck list.`);
+            }
 
             // Store initial artwork tracking parameters inside card instance
             localDeck[targetType].push({ 
@@ -229,6 +267,31 @@
                 img.src = activeImgUrl;
                 img.className = "w-full h-full cursor-pointer hover:scale-105 transition duration-150 object-cover";
                 img.addEventListener('click', () => removeCardFromDeck(index, type));
+
+                // --- NEW: HOVER/LARGE PREVIEW LOGIC ---
+                img.addEventListener('mouseenter', () => {
+                    const previewContainer = document.getElementById('fixedCardPreview');
+                    
+                    // We generate the large art URL based on the ID. 
+                    // This is the correct larger asset from the YGOPRODeck API structure.
+                    const largeArtUrl = `https://images.ygoprodeck.com/images/cards/${card.id}.jpg`;
+                    
+                    // Populate and display the fixed preview
+                    previewContainer.innerHTML = `<img src="${largeArtUrl}" class="w-full h-full object-cover">`;
+                    previewContainer.style.opacity = '1';
+                });
+
+                img.addEventListener('mouseleave', () => {
+                    const previewContainer = document.getElementById('fixedCardPreview');
+                    // Hide and reset the preview
+                    previewContainer.style.opacity = '0';
+                    setTimeout(() => {
+                        // Prevent briefly flashing the wrong card on next hover
+                        if (previewContainer.style.opacity === '0') previewContainer.innerHTML = "";
+                    }, 200); // Wait for the transition
+                });
+                // ----------------------------------------
+                
                 wrapper.appendChild(img);
 
                 // Add artwork selector overlay pill badge ONLY if variant options exist in array bundle
@@ -250,6 +313,49 @@
             localDeck.side.forEach((card, idx) => sideGrid.appendChild(buildCardContainer(card, idx, 'side')));
         }
 
+        function sortDeck() {
+            // --- 1. Sort Main and Side Decks (Monsters -> Spells -> Traps, then Alphabetical) ---
+            const mainSideOrder = { 'monster': 1, 'spell': 2, 'trap': 3 };
+            
+            const sortMainAndSide = (a, b) => {
+                // Determine group weights
+                const weightA = a.superType.toLowerCase().includes('spell') ? 2 : a.superType.toLowerCase().includes('trap') ? 3 : 1;
+                const weightB = b.superType.toLowerCase().includes('spell') ? 2 : b.superType.toLowerCase().includes('trap') ? 3 : 1;
+                
+                if (weightA !== weightB) {
+                    return weightA - weightB;
+                }
+                // If they are in the same group, sort alphabetically by name
+                return a.name.localeCompare(b.name);
+            };
+
+            localDeck.main.sort(sortMainAndSide);
+            localDeck.side.sort(sortMainAndSide);
+
+            // --- 2. Sort Extra Deck (Fusion -> Synchro -> XYZ -> Link) ---
+            const getExtraDeckWeight = (typeStr) => {
+                const t = typeStr.toLowerCase();
+                if (t.includes('fusion')) return 1;
+                if (t.includes('synchro')) return 2;
+                if (t.includes('xyz')) return 3;
+                if (t.includes('link')) return 4;
+                return 5; // Fallback
+            };
+
+            localDeck.extra.sort((a, b) => {
+                const weightA = getExtraDeckWeight(a.superType);
+                const weightB = getExtraDeckWeight(b.superType);
+
+                if (weightA !== weightB) {
+                    return weightA - weightB;
+                }
+                return a.name.localeCompare(b.name);
+            });
+
+            // --- 3. Refresh the UI ---
+            renderDeckView();
+        }
+
         // Global Event Triggers
         document.getElementById('searchBtn').addEventListener('click', searchCards);
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
@@ -259,6 +365,7 @@
             localDeck.main = []; localDeck.extra = []; localDeck.side = [];
             renderDeckView();
         });
+        document.getElementById('sortBtn').addEventListener('click', sortDeck);
 
         renderDeckView();
     </script>
