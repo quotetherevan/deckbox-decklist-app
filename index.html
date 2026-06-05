@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deck Box Owner Portal - Variant Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen p-4 md:p-8 font-sans">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        <header class="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+            <div>
+                <h1 class="text-2xl font-black text-gray-900">Deck Box Customizer</h1>
+                <p class="text-sm text-gray-500">Advanced Engine: Multi-artwork variant selection switcher</p>
+            </div>
+            <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full">Alt Art Variant Core Live</span>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <section class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col h-[850px]">
+                <h2 class="text-lg font-bold text-gray-800 mb-3">1. Add Cards to Box</h2>
+                
+                <div class="space-y-3 mb-4">
+                    <input type="text" id="searchInput" placeholder="Try 'Dark Magician' or 'Blue-Eyes'..." 
+                           class="w-full px-3 py-2 border rounded-lg text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    
+                    <div class="flex gap-2">
+                        <button id="searchBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg text-xs transition">
+                            Search Card
+                        </button>
+                        <select id="targetDeck" class="border rounded-lg text-xs bg-gray-50 px-2 font-semibold text-gray-700">
+                            <option value="main">Add to Main</option>
+                            <option value="extra">Add to Extra</option>
+                            <option value="side">Add to Side</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="searchResults" class="flex-1 overflow-y-auto border-t pt-3 grid grid-cols-2 gap-2 content-start">
+                    <p class="text-xs text-gray-400 col-span-2 text-center py-8">Search results will display here. Click a card to add it to your box.</p>
+                </div>
+            </section>
+
+            <section class="lg:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col h-[850px] overflow-y-auto space-y-6">
+                <div class="border-b pb-4">
+                    <div class="flex justify-between items-center">
+                        <input type="text" id="boxNameInput" value="My Variant Showcase Profile" 
+                               class="text-xl font-extrabold text-gray-900 border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none pb-1">
+                        <button id="clearBtn" class="text-xs text-red-500 hover:underline font-semibold">Clear Box</button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-0.5">Dynamic Web Path: <span class="underline text-blue-500">yourdomain.com/deck/db-local</span></p>
+                </div>
+
+                <div class="bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                        <h3 class="text-[10px] font-black uppercase tracking-wider text-gray-400">Main Deck</h3>
+                        <span class="text-sm font-black text-gray-800"><span id="mainCount">0</span> <span class="text-xs text-gray-400 font-normal">/ 60 Cards</span></span>
+                    </div>
+                    <div class="flex items-center gap-2 sm:justify-end">
+                        <div class="bg-orange-50 border border-orange-100 px-2.5 py-1 rounded-md flex items-center gap-1.5 min-w-[55px] justify-center" title="Monsters">
+                            <i class="fa-solid fa-gavel text-[10px] text-orange-600"></i>
+                            <span id="monsterCount" class="text-xs font-black text-orange-900">0</span>
+                        </div>
+                        <div class="bg-green-50 border border-green-100 px-2.5 py-1 rounded-md flex items-center gap-1.5 min-w-[55px] justify-center" title="Spells">
+                            <i class="fa-solid fa-bolt text-[10px] text-green-600"></i>
+                            <span id="spellCount" class="text-xs font-black text-green-900">0</span>
+                        </div>
+                        <div class="bg-purple-50 border border-purple-100 px-2.5 py-1 rounded-md flex items-center gap-1.5 min-w-[55px] justify-center" title="Traps">
+                            <i class="fa-solid fa-shield text-[10px] text-purple-600"></i>
+                            <span id="trapCount" class="text-xs font-black text-purple-900">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div id="mainDeckGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                        </div>
+                </div>
+
+                <div class="border-t pt-4">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-gray-400 mb-3">Extra Deck (<span id="extraCount">0</span>/15)</h3>
+                    <div id="extraDeckGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                        </div>
+                </div>
+
+                <div class="border-t pt-4">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-purple-500 mb-3 font-bold">Side Deck (<span id="sideCount">0</span>/15)</h3>
+                    <div id="sideDeckGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                        </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script>
+        // System state arrays track comprehensive card objects + image selection indexes
+        let localDeck = {
+            main: [], // Element shape: { id, name, superType, imagesList: [], currentArtIndex: 0 }
+            extra: [],
+            side: []
+        };
+
+        // Fetch cards from public database API 
+        async function searchCards() {
+            const query = document.getElementById('searchInput').value.trim();
+            const resultsPanel = document.getElementById('searchResults');
+            
+            if (!query) return;
+            resultsPanel.innerHTML = '<p class="text-xs text-gray-400 col-span-2 text-center py-8">Searching database...</p>';
+
+            try {
+                const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?fname=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                resultsPanel.innerHTML = ""; 
+                
+                if (!data.data || data.data.length === 0) {
+                    resultsPanel.innerHTML = '<p class="text-xs text-red-400 col-span-2 text-center py-8">No matching cards found.</p>';
+                    return;
+                }
+
+                const matches = data.data.slice(0, 20);
+                matches.forEach(card => {
+                    const cardId = card.id;
+                    const cardName = card.name;
+                    
+                    // Maps full array of variant image object references returned by API
+                    const imagesList = card.card_images.map(img => img.image_url_small);
+                    const defaultImgUrl = imagesList[0];
+                    
+                    let superType = 'Monster';
+                    if (card.type.toLowerCase().includes('spell')) {
+                        superType = 'Spell';
+                    } else if (card.type.toLowerCase().includes('trap')) {
+                        superType = 'Trap';
+                    }
+
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = "bg-gray-50 border rounded-lg p-1.5 flex flex-col items-center cursor-pointer hover:border-blue-500 hover:shadow-sm transition";
+                    cardDiv.innerHTML = `
+                        <img src="${defaultImgUrl}" class="w-full h-auto rounded mb-1">
+                        <div class="text-[10px] font-bold text-gray-700 text-center line-clamp-2">${cardName}</div>
+                    `;
+                    
+                    cardDiv.addEventListener('click', () => addCardToDeck(cardId, cardName, imagesList, superType));
+                    resultsPanel.appendChild(cardDiv);
+                });
+
+            } catch (error) {
+                resultsPanel.innerHTML = '<p class="text-xs text-red-400 col-span-2 text-center py-8">Error accessing database.</p>';
+            }
+        }
+
+        // Add item state configurations
+        function addCardToDeck(id, name, imagesList, superType) {
+            const targetType = document.getElementById('targetDeck').value; 
+            
+            if (localDeck.main.length >= 60 && targetType === 'main') return alert("Main deck limit reached.");
+            if (localDeck.extra.length >= 15 && targetType === 'extra') return alert("Extra deck limit reached.");
+            if (localDeck.side.length >= 15 && targetType === 'side') return alert("Side deck limit reached.");
+
+            // Store initial artwork tracking parameters inside card instance
+            localDeck[targetType].push({ 
+                id, 
+                name, 
+                imagesList, 
+                superType, 
+                currentArtIndex: 0 
+            });
+            renderDeckView();
+        }
+
+        // Cycle artwork indexing parameters sequentially on user interaction
+        function cycleCardArtwork(e, index, type) {
+            e.stopPropagation(); // Prevents card removal execution bubble!
+            
+            const card = localDeck[type][index];
+            // Loop back index to zero if it exceeds variant list length bounds
+            card.currentArtIndex = (card.currentArtIndex + 1) % card.imagesList.length;
+            renderDeckView();
+        }
+
+        // Pull card item from state configuration array
+        function removeCardFromDeck(index, type) {
+            localDeck[type].splice(index, 1);
+            renderDeckView();
+        }
+
+        // Math aggregate loop counters
+        function updateMainDeckRatios() {
+            let monsters = 0, spells = 0, traps = 0;
+            localDeck.main.forEach(card => {
+                if (card.superType === 'Monster') monsters++;
+                else if (card.superType === 'Spell') spells++;
+                else if (card.superType === 'Trap') traps++;
+            });
+            document.getElementById('monsterCount').innerText = monsters;
+            document.getElementById('spellCount').innerText = spells;
+            document.getElementById('trapCount').innerText = traps;
+        }
+
+        // Draw structural viewport panels
+        function renderDeckView() {
+            const mainGrid = document.getElementById('mainDeckGrid');
+            const extraGrid = document.getElementById('extraDeckGrid');
+            const sideGrid = document.getElementById('sideDeckGrid');
+            
+            mainGrid.innerHTML = ""; extraGrid.innerHTML = ""; sideGrid.innerHTML = "";
+
+            document.getElementById('mainCount').innerText = localDeck.main.length;
+            document.getElementById('extraCount').innerText = localDeck.extra.length;
+            document.getElementById('sideCount').innerText = localDeck.side.length;
+
+            updateMainDeckRatios();
+
+            // Factory generator builds composite layered HTML card frames
+            function buildCardContainer(card, index, type) {
+                const wrapper = document.createElement('div');
+                wrapper.className = "relative group w-full aspect-[321/468] rounded shadow-sm border border-transparent bg-gray-100 overflow-hidden";
+                
+                // Active artwork rendering source injection
+                const activeImgUrl = card.imagesList[card.currentArtIndex];
+                
+                const img = document.createElement('img');
+                img.src = activeImgUrl;
+                img.className = "w-full h-full cursor-pointer hover:scale-105 transition duration-150 object-cover";
+                img.addEventListener('click', () => removeCardFromDeck(index, type));
+                wrapper.appendChild(img);
+
+                // Add artwork selector overlay pill badge ONLY if variant options exist in array bundle
+                if (card.imagesList.length > 1) {
+                    const swapButton = document.createElement('button');
+                    swapButton.className = "absolute bottom-1 right-1 bg-black/70 hover:bg-black text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 opacity-90 transition sm:opacity-0 sm:group-hover:opacity-100";
+                    swapButton.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> Alt Art`;
+                    
+                    swapButton.addEventListener('click', (e) => cycleCardArtwork(e, index, type));
+                    wrapper.appendChild(swapButton);
+                }
+
+                return wrapper;
+            }
+
+            // Bind layout layers
+            localDeck.main.forEach((card, idx) => mainGrid.appendChild(buildCardContainer(card, idx, 'main')));
+            localDeck.extra.forEach((card, idx) => extraGrid.appendChild(buildCardContainer(card, idx, 'extra')));
+            localDeck.side.forEach((card, idx) => sideGrid.appendChild(buildCardContainer(card, idx, 'side')));
+        }
+
+        // Global Event Triggers
+        document.getElementById('searchBtn').addEventListener('click', searchCards);
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchCards();
+        });
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            localDeck.main = []; localDeck.extra = []; localDeck.side = [];
+            renderDeckView();
+        });
+
+        renderDeckView();
+    </script>
+</body>
+</html>
