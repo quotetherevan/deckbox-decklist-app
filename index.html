@@ -570,10 +570,10 @@
                     } else if (currentActiveFormat === 'genisys' && legalCheck.points > 0) {
                         badge.className += " bg-indigo-600 border border-indigo-400";
                         badge.innerText = `+${legalCheck.points} PTS`;
-                    } else if (legalCheck.reason === "Limited") {
+                    } else if (legalCheck.reason === "Limited" || legalCheck.reason === "Limited") {
                         badge.className += " bg-orange-600 border border-orange-400";
                         badge.innerText = "LIMIT 1";
-                    } else if (legalCheck.reason === "Semi-Limit") {
+                    } else if (legalCheck.reason === "Semi-Limit" || legalCheck.reason === "Semi-Limited") {
                         badge.className += " bg-amber-500 border border-amber-400 text-gray-950";
                         badge.innerText = "LIMIT 2";
                     }
