@@ -201,21 +201,34 @@
         }
 
         function addCardToDeck(id, name, imagesList, superType) {
-            const targetType = document.getElementById('targetDeck').value; 
+            let targetType = document.getElementById('targetDeck').value; 
             
+            // --- SEAMLESS EXTRA DECK ROUTING ---
+            const lowerSuperType = superType.toLowerCase();
+            const isExtraDeckMonster = ['fusion', 'synchro', 'xyz', 'link'].some(type => lowerSuperType.includes(type));
+            
+            // If it's an Extra Deck monster and "Add to Main" is selected, seamlessly redirect it
+            if (isExtraDeckMonster && targetType === 'main') {
+                targetType = 'extra';
+            }
+            // ------------------------------------
+            
+            // Deck size capacity checks based on the final target destination
             if (localDeck.main.length >= 60 && targetType === 'main') return alert("Main deck limit reached.");
             if (localDeck.extra.length >= 15 && targetType === 'extra') return alert("Extra deck limit reached.");
             if (localDeck.side.length >= 15 && targetType === 'side') return alert("Side deck limit reached.");
-
+        
+            // Count total global copies of this card (Main + Extra + Side)
             const mainCopies = localDeck.main.filter(card => card.id === id).length;
             const extraCopies = localDeck.extra.filter(card => card.id === id).length;
             const sideCopies = localDeck.side.filter(card => card.id === id).length;
             const totalCopies = mainCopies + extraCopies + sideCopies;
-
+        
+            // Enforce the 3-copy limit rule globally
             if (totalCopies >= 3) {
                 return alert(`You cannot add more than 3 copies of "${name}" to your deck list.`);
             }
-
+        
             localDeck[targetType].push({ 
                 id, 
                 name, 
