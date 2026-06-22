@@ -106,9 +106,18 @@
             
             <div id="modalImageContainer" class="flex-1 w-full bg-black"></div>
             
-            <div class="bg-gray-800 p-3 flex gap-2 border-t border-white/10">
-                <button id="modalDeleteBtn" class="flex-1 bg-red-600 active:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-sm">
-                    <i class="fa-solid fa-trash text-[10px]"></i> Remove From Box
+            <div class="bg-gray-800 p-4 flex flex-col gap-3 border-t border-white/10">
+                <div class="flex items-center justify-between bg-gray-950 px-3 py-2 rounded-xl border border-white/5">
+                    <span class="text-xs font-bold text-gray-400">Copies in Deck:</span>
+                    <div class="flex items-center gap-4">
+                        <button id="modalMinusBtn" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 active:scale-95 text-white font-black flex items-center justify-center transition border border-white/10">-</button>
+                        <span id="modalQuantityDisplay" class="text-sm font-black text-white min-w-[12px] text-center">1</span>
+                        <button id="modalPlusBtn" class="w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-black flex items-center justify-center transition border border-indigo-400/20">+</button>
+                    </div>
+                </div>
+                
+                <button id="modalDeleteBtn" class="w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/20 active:bg-red-600 active:text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-trash text-[10px]"></i> Remove Entire Playset
                 </button>
             </div>
     
@@ -126,8 +135,8 @@
             side: []
         };
 
-        // Tracks which card layout index is actively active inside the mobile modal context viewport
-        let activeModalTarget = { index: null, type: null };
+        // State tracking object for mobile modal operations
+        let activeModalTarget = { id: null, name: null, type: null, imagesList: null, superType: null };
 
         // Fetch cards from public database API 
         async function searchCards() {
@@ -314,9 +323,16 @@
                     if (window.innerWidth < 1024) {
                         e.stopPropagation();
                         
-                        // Save indices to global pointer state before opening viewport
-                        activeModalTarget.index = index;
+                        // Save complete configuration parameters to state target
+                        activeModalTarget.id = card.id;
+                        activeModalTarget.name = card.name;
                         activeModalTarget.type = type;
+                        activeModalTarget.imagesList = card.imagesList;
+                        activeModalTarget.superType = card.superType;
+                        
+                        // Calculate current total instances inside this specific tracking segment
+                        const currentCount = localDeck[type].filter(c => c.id === card.id).length;
+                        document.getElementById('modalQuantityDisplay').innerText = currentCount;
                         
                         const mobileModal = document.getElementById('mobileCardModal');
                         const modalContainer = document.getElementById('modalImageContainer');
@@ -416,20 +432,70 @@
         
         document.getElementById('closeModalBtn').addEventListener('click', closeMobileModal);
         document.getElementById('mobileCardModal').addEventListener('click', closeMobileModal);
-        // Mobile Modal Internal Deletion Execution Loop
-        document.getElementById('modalDeleteBtn').addEventListener('click', (e) => {
-            e.stopPropagation(); // Shield array execution bubble strings
+
+        // Helper to recount items live inside modal workflow
+        function refreshModalQuantity() {
+            if (!activeModalTarget.id) return;
+            const currentCount = localDeck[activeModalTarget.type].filter(c => c.id === activeModalTarget.id).length;
+            document.getElementById('modalQuantityDisplay').innerText = currentCount;
             
-            if (activeModalTarget.index !== null && activeModalTarget.type !== null) {
-                // 1. Execute the core engine deletion rule
-                removeCardFromDeck(activeModalTarget.index, activeModalTarget.type);
-                
-                // 2. Safely close down the active modal window wrapper
+            // If quantity hits zero, dismiss view automatically
+            if (currentCount === 0) {
                 closeMobileModal();
-                
-                // 3. Clear transient hardware tracking states
-                activeModalTarget = { index: null, type: null };
             }
+        }
+        
+        // PLUS BUTTON: Add an instance (checks tournament limits)
+        document.getElementById('modalPlusBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = activeModalTarget.type;
+            
+            // Check general layout pool ceilings
+            if (localDeck.main.length >= 60 && type === 'main') return alert("Main deck limit reached.");
+            if (localDeck.extra.length >= 15 && type === 'extra') return alert("Extra deck limit reached.");
+            if (localDeck.side.length >= 15 && type === 'side') return alert("Side deck limit reached.");
+            
+            // Check total global duplicate play ceiling
+            const globalCount = ['main', 'extra', 'side'].reduce((acc, t) => acc + localDeck[t].filter(c => c.id === activeModalTarget.id).length, 0);
+            if (globalCount >= 3) return alert(`Maximum tournament playset threshold (3) reached for "${activeModalTarget.name}".`);
+        
+            // Push new copy clone to layout tracking target
+            localDeck[type].push({
+                id: activeModalTarget.id,
+                name: activeModalTarget.name,
+                imagesList: activeModalTarget.imagesList,
+                superType: activeModalTarget.superType,
+                currentArtIndex: 0
+            });
+            
+            renderDeckView();
+            refreshModalQuantity();
+        });
+        
+        // MINUS BUTTON: Pop a single copy
+        document.getElementById('modalMinusBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = activeModalTarget.type;
+            
+            // Find last matching occurrence index and drop it
+            const targetIdx = localDeck[type].findLastIndex(c => c.id === activeModalTarget.id);
+            if (targetIdx !== -1) {
+                localDeck[type].splice(targetIdx, 1);
+                renderDeckView();
+                refreshModalQuantity();
+            }
+        });
+        
+        // WIPE BUTTON: Drops all copies of this card inside this specific zone instantly
+        document.getElementById('modalDeleteBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = activeModalTarget.type;
+            
+            // Clean array filtering configuration execution
+            localDeck[type] = localDeck[type].filter(c => c.id !== activeModalTarget.id);
+            
+            renderDeckView();
+            closeMobileModal();
         });
         
         renderDeckView();
