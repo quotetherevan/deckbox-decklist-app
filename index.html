@@ -199,9 +199,10 @@
             deckCollection.forEach(deck => {
                 const option = document.createElement('option');
                 option.value = deck.id;
-                option.textContent = deck.name;
+                option.textContent = deck.name; // This populates the dropdown list correctly
                 if (deck.id === activeDeckId) {
                     option.selected = true;
+                    // FIX: Populate the input field text with the SAVED name, don't overwrite it!
                     document.getElementById('boxNameInput').value = deck.name;
                 }
                 switcher.appendChild(option);
