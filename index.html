@@ -535,18 +535,19 @@
             }
 
             function buildCardContainer(card, index, type) {
-                // Ensure the wrapper acts as a rigid, static cell anchor
+                // 1. Force the wrapper to be a rigid bounding box that cannot expand
                 const wrapper = document.createElement('div');
-                wrapper.className = "relative group w-full aspect-[321/468] rounded shadow-sm border border-transparent bg-gray-100 overflow-hidden isolate transform-gpu";
+                wrapper.className = "relative group w-full aspect-[321/468] rounded shadow-sm border border-transparent bg-gray-100 overflow-hidden isolate";
                 
                 const activeImgUrl = card.imagesList[card.currentArtIndex];
                 
-                // Add block layout and mirror the aspect ratio directly onto the image
+                // 2. Use absolute positioning and h-full/w-full so the image fills the anchor 
+                // but its hover scale cannot physically push the boundaries of the wrapper.
                 const img = document.createElement('img');
                 img.src = activeImgUrl;
-                img.className = "block w-full h-full aspect-[321/468] cursor-pointer hover:scale-105 transition-transform duration-150 ease-out object-contain transform-gpu will-change-transform";
-                img.style.backfaceVisibility = "hidden";
-                img.style.webkitBackfaceVisibility = "hidden";
+                img.className = "absolute inset-0 w-full h-full cursor-pointer hover:scale-105 transition-transform duration-150 ease-out object-contain transform-gpu will-change-transform";
+                
+                wrapper.appendChild(img);
 
                 // Formulate Overlay Visual Badging Elements
                 const legalCheck = evaluateCardLegality(card.name, card.superType, card.apiBanStatus, card.releasedDate);
