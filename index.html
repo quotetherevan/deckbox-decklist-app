@@ -46,12 +46,23 @@
 
             <section class="lg:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col h-[850px] overflow-y-auto space-y-6">
                 <div class="border-b pb-4">
-                    <div class="flex justify-between items-center">
-                        <input type="text" id="boxNameInput" value="My Variant Showcase Profile" 
-                               class="text-xl font-extrabold text-gray-900 border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none pb-1">
-                        <button id="clearBtn" class="text-xs text-red-500 hover:underline font-semibold">Clear Box</button>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <!-- Flex container handles name editing, switching, and creating -->
+                        <div class="flex flex-wrap items-center gap-3 flex-1">
+                            <input type="text" id="boxNameInput" value="" 
+                                   class="text-xl font-extrabold text-gray-900 border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none pb-1">
+                            
+                            <!-- Dynamic Deck Switcher Dropdown -->
+                            <select id="deckSwitcher" class="border rounded-lg text-xs bg-gray-50 px-2 py-1.5 font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                            
+                            <!-- Create New Deck Button -->
+                            <button id="newDeckBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs transition flex items-center gap-1">
+                                <i class="fa-solid fa-plus"></i> New Deck
+                            </button>
+                        </div>
+                        <button id="clearBtn" class="text-xs text-red-500 hover:underline font-semibold self-end sm:self-center">Clear Box</button>
                     </div>
-                    <p class="text-xs text-gray-400 mt-0.5">Dynamic Web Path: <span class="underline text-blue-500">yourdomain.com/deck/db-local</span></p>
+                    <p class="text-xs text-gray-400 mt-2">Dynamic Web Path: <span class="underline text-blue-500">yourdomain.com/deck/db-local</span></p>
                 </div>
 
                 <div class="bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -129,24 +140,47 @@
     </div>
 
     <script>
-        let localDeck = {
-            main: [], 
-            extra: [],
-            side: []
-        };
+        const STORAGE_KEY = 'ygo_deckbox_multideck_v1';
 
-        let activeModalTarget = { id: null, name: null, type: null, imagesList: null, superType: null };
-
-        const STORAGE_KEY = 'ygo_deckbox_v1';
-        // This pulls the deck from the browser cache when the page loads
-        const cachedDeck = localStorage.getItem(STORAGE_KEY);
-        if (cachedDeck) {
+        // Initial state structures
+        let deckCollection = []; 
+        let activeDeckId = null;  // Tracks which deck is currently loaded
+        let localDeck = { main: [], extra: [], side: [] }; // The active working deck
+        
+        // Load collection from local storage on page boot
+        const cachedCollection = localStorage.getItem(STORAGE_KEY);
+        if (cachedCollection) {
             try {
-                localDeck = JSON.parse(cachedDeck);
+                const parsed = JSON.parse(cachedCollection);
+                deckCollection = parsed.decks || [];
+                activeDeckId = parsed.activeDeckId || null;
+                
+                // Find and load the active deck out of the collection
+                const currentSavedDeck = deckCollection.find(d => d.id === activeDeckId);
+                if (currentSavedDeck) {
+                    localDeck = currentSavedDeck.data;
+                } else if (deckCollection.length > 0) {
+                    // Fallback to the first deck if active deck is missing
+                    activeDeckId = deckCollection[0].id;
+                    localDeck = deckCollection[0].data;
+                }
             } catch (e) {
-                console.error("Error parsing cached deck data, resetting storage.");
+                console.error("Error parsing cached deck collections:", e);
             }
         }
+        
+        // If it's a first-time user or storage was empty, initialize a default profile
+        if (deckCollection.length === 0) {
+            activeDeckId = 'deck_' + Date.now();
+            deckCollection.push({
+                id: activeDeckId,
+                name: "My Variant Showcase Profile",
+                data: { main: [], extra: [], side: [] }
+            });
+            localDeck = deckCollection[0].data;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ decks: deckCollection, activeDeckId }));
+        }
+        let activeModalTarget = { id: null, name: null, type: null, imagesList: null, superType: null };
         
         async function searchCards() {
             const query = document.getElementById('searchInput').value.trim();
