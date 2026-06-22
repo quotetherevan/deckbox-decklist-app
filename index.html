@@ -303,11 +303,14 @@
             return { legal: true, reason: "Unlimited", points: 0, maxAllowed: 3 };
         }
 
-        // Multi-Deck Synchronization Pipeline Functions
         function saveToLocalStorage() {
             const activeDeckIndex = deckCollection.findIndex(d => d.id === activeDeckId);
             if (activeDeckIndex !== -1) {
                 deckCollection[activeDeckIndex].data = localDeck;
+                
+                // Save the active format ruleset directly to this profile
+                deckCollection[activeDeckIndex].format = document.getElementById('formatSelector').value;
+                
                 const currentInputValue = document.getElementById('boxNameInput').value.trim();
                 if (currentInputValue) {
                     deckCollection[activeDeckIndex].name = currentInputValue;
@@ -704,6 +707,19 @@
             if (selected) {
                 localDeck = selected.data;
                 document.getElementById('boxNameInput').value = selected.name;
+                
+                // Restore the profile's saved format, defaulting to 'advanced' if it's an old save
+                currentActiveFormat = selected.format || 'advanced';
+                document.getElementById('formatSelector').value = currentActiveFormat;
+                
+                // Ensure the dashboard tracker element updates visibility dynamically
+                const trackerBlock = document.getElementById('genisysTrackerBlock');
+                if (currentActiveFormat === 'genisys') {
+                    trackerBlock.classList.remove('hidden');
+                } else {
+                    trackerBlock.classList.add('hidden');
+                }
+                
                 renderDeckView();
             }
         });
@@ -795,6 +811,13 @@
         const selectedOnBoot = deckCollection.find(d => d.id === activeDeckId);
         if (selectedOnBoot) {
             document.getElementById('boxNameInput').value = selectedOnBoot.name;
+            
+            // Set format state on clean boot load
+            currentActiveFormat = selectedOnBoot.format || 'advanced';
+            document.getElementById('formatSelector').value = currentActiveFormat;
+            
+            const trackerBlock = document.getElementById('genisysTrackerBlock');
+            if (currentActiveFormat === 'genisys') trackerBlock.classList.remove('hidden');
         }
         renderDeckView();
     </script>
