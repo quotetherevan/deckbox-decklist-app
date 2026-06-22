@@ -59,6 +59,9 @@
                                     <option value="advanced">Advanced Format (2026)</option>
                                     <option value="edison">Edison Format (2010)</option>
                                     <option value="genisys">Genisys Format (Points)</option>
+                                    <option value="goat">GOAT Format (2005)</option>
+                                    <option value="ocg">OCG Format</option>
+                                    <option value="unrestricted">Other / Unrestricted Sandbox</option>
                                 </select>
                             </div>
 
@@ -79,4 +82,693 @@
                     <p class="text-xs text-gray-400 mt-2">Dynamic Web Path: <span class="underline text-blue-500">yourdomain.com/deck/db-local</span></p>
                 </div>
 
-                <div class="bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 flex flex-col sm:flex-row sm:items
+                <div class="bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <h3 class="text-[10px] font-black uppercase tracking-wider text-gray-400">Main Deck</h3>
+                            <span class="text-sm font-black text-gray-800"><span id="mainCount">0</span> <span class="text-xs text-gray-400 font-normal">/ 60 Cards</span></span>
+                        </div>
+                        <button id="sortBtn" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-sm transition">
+                            <i class="fa-solid fa-arrow-down-a-z text-[10px]"></i> Sort Deck
+                        </button>
+                        
+                        <div id="genisysTrackerBlock" class="hidden bg-indigo-950 border border-indigo-800 px-3 py-1.5 rounded-lg flex items-center gap-1.5" title="Genisys Total Points Usage Allocation">
+                            <i class="fa-solid fa-diamond text-[9px] text-indigo-400"></i>
+                            <span class="text-[9px] text-indigo-200 font-black uppercase tracking-wider">Points:</span>
+                            <span id="genisysTotalPoints" class="text-xs font-black text-white">0</span>
+                            <span class="text-[9px] text-indigo-400 font-normal">/ 100</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 sm:justify-end">
+                        <div class="bg-orange-50 border border-orange-100 px-2.5 py-1 rounded-md flex items-center gap-1.5 min-w-[55px] justify-center" title="Monsters">
+                            <i class="fa-solid fa-gavel text-[10px] text-orange-600"></i>
+                            <span id="monsterCount" class="text-xs font-black text-orange-900">0</span>
+                        </div>
+                        <div class="bg-green-50 border border-green-100 px-2.5 py-1 rounded-md flex items-center gap-1.5 min-w-[55px] justify-center" title="Spells">
+                            <i class="fa-solid fa-bolt text-[10px] text-green-600"></i>
+                            <span id="spellCount" class="text-xs font-black text-green-900">0</span>
+                        </div>
+                        <div class="bg-purple-50 border border-purple-100 px-2.5 py-1 rounded-md flex items-center gap-1.5 min-w-[55px] justify-center" title="Traps">
+                            <i class="fa-solid fa-shield text-[10px] text-purple-600"></i>
+                            <span id="trapCount" class="text-xs font-black text-purple-900">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div id="mainDeckGrid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2"></div>
+                </div>
+
+                <div class="border-t pt-4">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-gray-400 mb-3">Extra Deck (<span id="extraCount">0</span>/15)</h3>
+                    <div id="extraDeckGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-2"></div>
+                </div>
+                
+                <div class="border-t pt-4">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-purple-500 mb-3 font-bold">Side Deck (<span id="sideCount">0</span>/15)</h3>
+                    <div id="sideDeckGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-2"></div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <div id="desktopCardPreview" class="hidden lg:block fixed bottom-6 right-6 w-[280px] aspect-[321/468] z-50 rounded-2xl shadow-2xl border-4 border-white bg-gray-50 overflow-hidden pointer-events-none opacity-0 transition-opacity duration-200"></div>
+
+    <div id="mobileCardModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="relative max-w-xs w-full h-[85%] bg-gray-900 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20 flex flex-col">
+            <div id="modalImageContainer" class="flex-1 w-full bg-black"></div>
+            <div class="bg-gray-800 p-4 flex flex-col gap-3 border-t border-white/10">
+                <div class="flex items-center justify-between bg-gray-950 px-3 py-2 rounded-xl border border-white/5">
+                    <span class="text-xs font-bold text-gray-400">Copies in Deck:</span>
+                    <div class="flex items-center gap-4">
+                        <button id="modalMinusBtn" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 active:scale-95 text-white font-black flex items-center justify-center transition border border-white/10">-</button>
+                        <span id="modalQuantityDisplay" class="text-sm font-black text-white min-w-[12px] text-center">1</span>
+                        <button id="modalPlusBtn" class="w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-black flex items-center justify-center transition border border-indigo-400/20">+</button>
+                    </div>
+                </div>
+                <button id="modalDeleteBtn" class="w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/20 active:bg-red-600 active:text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-trash text-[10px]"></i> Remove Entire Playset
+                </button>
+            </div>
+            <button id="closeModalBtn" class="absolute top-3 right-3 bg-black/60 text-white w-8 h-8 rounded-full flex items-center justify-center border border-white/20 active:bg-black transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'ygo_deckbox_multideck_v1';
+
+        // Format and Banlist Engines Data Strategy Maps
+        let currentActiveFormat = 'advanced';
+        const GENISYS_MAX_POINTS = 100;
+
+        const FORMAT_CONFIGS = {
+            advanced: { name: "Advanced Format", apiQueryKey: "ban_tcg" },
+            edison: { name: "Edison Format (2010)", apiQueryKey: "ban_tcg", maxReleaseDate: "2010-04-10" },
+            genisys: { name: "Genisys Format", maxPoints: GENISYS_MAX_POINTS, illegalTypes: ['link', 'pendulum'] }
+            goat: { name: "GOAT Format (2005)", apiQueryKey: "ban_goat", maxReleaseDate: "2005-08-17" },
+            ocg: { name: "OCG Format", apiQueryKey: "ban_ocg" }
+            unrestricted: { name: "Other / Unrestricted", apiQueryKey: null }
+        };
+
+        const GENISYS_POINTS_DB = {
+            "Abyss Dweller": 100, "Angel O7": 100, "Arcana Force XXI - The World": 100, 
+            "Archlord Kristya": 100, "Archnemeses Eschatos": 100, "Archnemeses Protos": 100,
+            "Artifact Scythe": 100, "Catapult Turtle": 100, "Contact \"C\"": 100,
+            "Beatrice, Lady of the Eternal": 100, "True King of All Calamities": 100,
+            "Cold Wave": 100, "Confiscation": 100, "Delinquent Duo": 100,
+            "Baronne de Fleur": 80, "Crimson Dragon": 80, "Bahamut Shark": 81,
+            "Branded Fusion": 40, "Card Destruction": 40,
+            "Foolish Burial": 25, "Necrovalley": 25, "Diabellstar the Black Witch": 20,
+            "Chaos Angel": 20, "Big Welcome Labrynth": 15, "Glow-Up Bulb": 15,
+            "Infinite Impermanence": 11, "Bystial Dis Pater": 10
+        };
+
+        const EDISON_BANLIST_OVERRIDES = {
+            "Dark Strike Fighter": "Banned", "Chaos Emperor Dragon - Envoy of the End": "Banned",
+            "Monster Reborn": "Banned", "Raigeki": "Banned", "Harpies Feather Duster": "Banned",
+            "Pot of Greed": "Banned", "Graceful Charity": "Banned", "Delinquent Duo": "Banned",
+            "Blackwing - Gale the Whirlwind": "Limited", "Gorz the Emissary of Darkness": "Limited",
+            "Goyo Guardian": "Limited", "Brionac, Dragon of the Ice Barrier": "Limited",
+            "Black Rose Dragon": "Limited", "Dark Armed Dragon": "Limited", "Rescue Cat": "Limited",
+            "Elemental HERO Stratos": "Limited", "Brain Control": "Limited", "Mind Control": "Limited",
+            "Heavy Storm": "Limited", "Mystical Space Typhoon": "Limited", "Solemn Judgment": "Limited",
+            "Torrential Tribute": "Limited", "Mirror Force": "Limited", "Trap Dustshoot": "Limited",
+            "Cyber Dragon": "Semi-Limited", "Dandylion": "Semi-Limited", "Destiny HERO - Malicious": "Semi-Limited",
+            "Honest": "Semi-Limited", "Black Whirlwind": "Semi-Limited", "Bottomless Trap Hole": "Semi-Limited",
+            "Skill Drain": "Semi-Limited", "Royal Oppression": "Semi-Limited"
+        };
+
+        // Initial state structures
+        let deckCollection = []; 
+        let activeDeckId = null;  
+        let localDeck = { main: [], extra: [], side: [] }; 
+        
+        // Load collections securely on initialization
+        const cachedCollection = localStorage.getItem(STORAGE_KEY);
+        if (cachedCollection) {
+            try {
+                const parsed = JSON.parse(cachedCollection);
+                deckCollection = parsed.decks || [];
+                activeDeckId = parsed.activeDeckId || null;
+                
+                const currentSavedDeck = deckCollection.find(d => d.id === activeDeckId);
+                if (currentSavedDeck) {
+                    localDeck = currentSavedDeck.data;
+                } else if (deckCollection.length > 0) {
+                    activeDeckId = deckCollection[0].id;
+                    localDeck = deckCollection[0].data;
+                }
+            } catch (e) {
+                console.error("Error parsing cached deck collections:", e);
+            }
+        }
+        
+        // Default initialization for empty caches
+        if (deckCollection.length === 0) {
+            activeDeckId = 'deck_' + Date.now();
+            deckCollection.push({
+                id: activeDeckId,
+                name: "My Variant Showcase Profile",
+                data: { main: [], extra: [], side: [] }
+            });
+            localDeck = deckCollection[0].data;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ decks: deckCollection, activeDeckId }));
+        }
+
+        let activeModalTarget = { id: null, name: null, type: null, imagesList: null, superType: null, apiBanStatus: null, releasedDate: null };
+        
+        // Engine Legality Pipeline Logic Matcher
+        function evaluateCardLegality(cardName, cardType, apiBanStatus, releaseDate) {
+            const format = currentActiveFormat;
+
+            // Bypasses all banlist throttling for unreleased cards or custom decklists
+            if (format === 'unrestricted') {
+                return { legal: true, reason: "Unlimited", points: 0, maxAllowed: 3 }; 
+            }
+
+            if (format === 'goat') {
+                if (releaseDate) {
+                    const release = new Date(releaseDate);
+                    const goatCutoff = new Date(FORMAT_CONFIGS.goat.maxReleaseDate);
+                    if (release > goatCutoff) {
+                        return { legal: false, reason: "Post-GOAT", points: 0, maxAllowed: 0 };
+                    }
+                }
+                // You can handle standard Forbidden/Limited text or explicit GOAT list overrides here
+                if (apiBanStatus === "Forbidden") return { legal: false, reason: "Banned", points: 0, maxAllowed: 0 };
+                return { legal: true, reason: "Legal", points: 0, maxAllowed: 3 };
+            }
+            
+            if (format === 'ocg') {
+                // Dynamically checks your card's OCG data properties if available from the API payload
+                if (card.banlist_info?.ban_ocg === "Forbidden") return { legal: false, reason: "Banned", points: 0, maxAllowed: 0 };
+                if (card.banlist_info?.ban_ocg === "Limited") return { legal: true, reason: "Limited", points: 0, maxAllowed: 1 };
+                if (card.banlist_info?.ban_ocg === "Semi-Limited") return { legal: true, reason: "Semi-Limit", points: 0, maxAllowed: 2 };
+                return { legal: true, reason: "Unlimited", points: 0, maxAllowed: 3 };
+            }
+            
+            if (format === 'genisys') {
+                const lowerType = cardType.toLowerCase();
+                if (FORMAT_CONFIGS.genisys.illegalTypes.some(t => lowerType.includes(t))) {
+                    return { legal: false, reason: "Banned", points: 0, maxAllowed: 0 };
+                }
+                const points = GENISYS_POINTS_DB[cardName] !== undefined ? GENISYS_POINTS_DB[cardName] : 0;
+                return { legal: true, reason: `${points} PTS`, points: points, maxAllowed: 3 };
+            }
+            
+            if (format === 'edison') {
+                if (releaseDate) {
+                    const release = new Date(releaseDate);
+                    const edisonCutoff = new Date(FORMAT_CONFIGS.edison.maxReleaseDate);
+                    if (release > edisonCutoff) {
+                        return { legal: false, reason: "Post-Edison", points: 0, maxAllowed: 0 };
+                    }
+                }
+                if (EDISON_BANLIST_OVERRIDES[cardName]) {
+                    const status = EDISON_BANLIST_OVERRIDES[cardName];
+                    if (status === "Banned") return { legal: false, reason: "Banned", points: 0, maxAllowed: 0 };
+                    if (status === "Limited") return { legal: true, reason: "Limited", points: 0, maxAllowed: 1 };
+                    if (status === "Semi-Limited") return { legal: true, reason: "Semi-Limit", points: 0, maxAllowed: 2 };
+                }
+                return { legal: true, reason: "Unlimited", points: 0, maxAllowed: 3 };
+            }
+            
+            if (apiBanStatus === "Forbidden") return { legal: false, reason: "Banned", points: 0, maxAllowed: 0 };
+            if (apiBanStatus === "Limited") return { legal: true, reason: "Limited", points: 0, maxAllowed: 1 };
+            if (apiBanStatus === "Semi-Limited") return { legal: true, reason: "Semi-Limit", points: 0, maxAllowed: 2 };
+            
+            return { legal: true, reason: "Unlimited", points: 0, maxAllowed: 3 };
+        }
+
+        // Multi-Deck Synchronization Pipeline Functions
+        function saveToLocalStorage() {
+            const activeDeckIndex = deckCollection.findIndex(d => d.id === activeDeckId);
+            if (activeDeckIndex !== -1) {
+                deckCollection[activeDeckIndex].data = localDeck;
+                const currentInputValue = document.getElementById('boxNameInput').value.trim();
+                if (currentInputValue) {
+                    deckCollection[activeDeckIndex].name = currentInputValue;
+                }
+            }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                decks: deckCollection,
+                activeDeckId: activeDeckId
+            }));
+        }
+
+        function updateDeckSwitcherUI() {
+            const switcher = document.getElementById('deckSwitcher');
+            if (!switcher) return;
+            
+            switcher.innerHTML = "";
+            deckCollection.forEach(deck => {
+                const option = document.createElement('option');
+                option.value = deck.id;
+                option.textContent = deck.name;
+                if (deck.id === activeDeckId) {
+                    option.selected = true;
+                }
+                switcher.appendChild(option);
+            });
+
+            const currentSavedDeck = deckCollection.find(d => d.id === activeDeckId);
+            if (currentSavedDeck) {
+                document.getElementById('boxNameInput').value = currentSavedDeck.name;
+            }
+        }
+
+        async function searchCards() {
+            const query = document.getElementById('searchInput').value.trim();
+            const resultsPanel = document.getElementById('searchResults');
+            
+            if (!query) return;
+            resultsPanel.innerHTML = '<p class="text-xs text-gray-400 col-span-2 text-center py-8">Searching database...</p>';
+
+            try {
+                const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?fname=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                resultsPanel.innerHTML = ""; 
+                
+                if (!data.data || data.data.length === 0) {
+                    resultsPanel.innerHTML = '<p class="text-xs text-red-400 col-span-2 text-center py-8">No matching cards found.</p>';
+                    return;
+                }
+
+                const matches = data.data.slice(0, 20);
+                matches.forEach(card => {
+                    const cardId = card.id;
+                    const cardName = card.name;
+                    const imagesList = card.card_images.map(img => img.image_url_small);
+                    const defaultImgUrl = imagesList[0];
+                    
+                    // Harvest data parameters required for modern or legacy format compliance engines
+                    const apiBanStatus = card.banlist_info ? card.banlist_info.ban_tcg : "Unlimited";
+                    const releasedDate = card.misc_info ? card.misc_info[0]?.tcg_date : null;
+
+                    let superType = 'Monster';
+                    if (card.type.toLowerCase().includes('spell')) {
+                        superType = 'Spell';
+                    } else if (card.type.toLowerCase().includes('trap')) {
+                        superType = 'Trap';
+                    } else {
+                        superType = card.type; 
+                    }
+
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = "bg-gray-50 border rounded-lg p-1.5 flex flex-col items-center cursor-pointer hover:border-blue-500 hover:shadow-sm transition";
+                    cardDiv.innerHTML = `
+                        <img src="${defaultImgUrl}" class="w-full h-auto rounded mb-1">
+                        <div class="text-[10px] font-bold text-gray-700 text-center line-clamp-2">${cardName}</div>
+                    `;
+                    
+                    cardDiv.addEventListener('click', () => addCardToDeck(cardId, cardName, imagesList, superType, apiBanStatus, releasedDate));
+                    resultsPanel.appendChild(cardDiv);
+                });
+
+            } catch (error) {
+                resultsPanel.innerHTML = '<p class="text-xs text-red-400 col-span-2 text-center py-8">Error accessing database.</p>';
+            }
+        }
+
+        function addCardToDeck(id, name, imagesList, superType, apiBanStatus, releasedDate) {
+            let targetType = document.getElementById('targetDeck').value; 
+            
+            const lowerSuperType = superType.toLowerCase();
+            const isExtraDeckMonster = ['fusion', 'synchro', 'xyz', 'link'].some(type => lowerSuperType.includes(type));
+            
+            if (isExtraDeckMonster && targetType === 'main') {
+                targetType = 'extra';
+            }
+            
+            if (localDeck.main.length >= 60 && targetType === 'main') return alert("Main deck limit reached.");
+            if (localDeck.extra.length >= 15 && targetType === 'extra') return alert("Extra deck limit reached.");
+            if (localDeck.side.length >= 15 && targetType === 'side') return alert("Side deck limit reached.");
+        
+            const mainCopies = localDeck.main.filter(card => card.id === id).length;
+            const extraCopies = localDeck.extra.filter(card => card.id === id).length;
+            const sideCopies = localDeck.side.filter(card => card.id === id).length;
+            const totalCopies = mainCopies + extraCopies + sideCopies;
+        
+            // Validate compliance limits dynamically against the running deck bounds before appending
+            const validationCheck = evaluateCardLegality(name, superType, apiBanStatus, releasedDate);
+            if (totalCopies >= validationCheck.maxAllowed) {
+                return alert(`Format rules enforce a maximum copy threshold limit of (${validationCheck.maxAllowed}) for "${name}".`);
+            }
+        
+            localDeck[targetType].push({ 
+                id, 
+                name, 
+                imagesList, 
+                superType, 
+                apiBanStatus,
+                releasedDate,
+                currentArtIndex: 0 
+            });
+            renderDeckView();
+        }
+
+        function cycleCardArtwork(e, index, type) {
+            e.stopPropagation(); 
+            
+            const card = localDeck[type][index];
+            card.currentArtIndex = (card.currentArtIndex + 1) % card.imagesList.length;
+            renderDeckView();
+        }
+
+        function removeCardFromDeck(cardObject, type) {
+            if (!cardObject) return;
+            const actualIndex = localDeck[type].indexOf(cardObject);
+            if (actualIndex !== -1) {
+                localDeck[type].splice(actualIndex, 1);
+            }
+            renderDeckView();
+        }
+
+        function updateMainDeckRatios() {
+            let monsters = 0, spells = 0, traps = 0;
+            localDeck.main.forEach(card => {
+                if (card.superType.toLowerCase().includes('spell')) spells++;
+                else if (card.superType.toLowerCase().includes('trap')) traps++;
+                else monsters++; 
+            });
+            document.getElementById('monsterCount').innerText = monsters;
+            document.getElementById('spellCount').innerText = spells;
+            document.getElementById('trapCount').innerText = traps;
+        }
+
+        function renderDeckView() {
+            const mainGrid = document.getElementById('mainDeckGrid');
+            const extraGrid = document.getElementById('extraDeckGrid');
+            const sideGrid = document.getElementById('sideDeckGrid');
+            
+            mainGrid.innerHTML = ""; extraGrid.innerHTML = ""; sideGrid.innerHTML = "";
+
+            document.getElementById('mainCount').innerText = localDeck.main.length;
+            document.getElementById('extraCount').innerText = localDeck.extra.length;
+            document.getElementById('sideCount').innerText = localDeck.side.length;
+
+            updateMainDeckRatios();
+
+            // Intercept data processing loops to compute dynamic formatting configurations rules point costs 
+            let aggregateGenisysPoints = 0;
+            const piles = ['main', 'extra', 'side'];
+            piles.forEach(pKey => {
+                localDeck[pKey].forEach(c => {
+                    const check = evaluateCardLegality(c.name, c.superType, c.apiBanStatus, c.releasedDate);
+                    if (currentActiveFormat === 'genisys') {
+                        aggregateGenisysPoints += check.points;
+                    }
+                });
+            });
+
+            // Update Points Dashboard Ledger Node elements
+            const pointsTrackerSpan = document.getElementById('genisysTotalPoints');
+            if (pointsTrackerSpan) {
+                pointsTrackerSpan.innerText = aggregateGenisysPoints;
+                if (aggregateGenisysPoints > GENISYS_MAX_POINTS) {
+                    pointsTrackerSpan.className = "text-xs font-black text-red-400 animate-pulse";
+                } else {
+                    pointsTrackerSpan.className = "text-xs font-black text-emerald-400";
+                }
+            }
+
+            function buildCardContainer(card, index, type) {
+                const wrapper = document.createElement('div');
+                wrapper.className = "relative group w-full aspect-[321/468] rounded shadow-sm border border-transparent bg-gray-100 overflow-hidden";
+                
+                const activeImgUrl = card.imagesList[card.currentArtIndex];
+                
+                const img = document.createElement('img');
+                img.src = activeImgUrl;
+                img.className = "w-full h-full cursor-pointer hover:scale-105 transition duration-150 object-contain";
+
+                // Formulate Overlay Visual Badging Elements
+                const legalCheck = evaluateCardLegality(card.name, card.superType, card.apiBanStatus, card.releasedDate);
+                if (!legalCheck.legal || (legalCheck.reason !== "Unlimited" && legalCheck.reason !== "0 PTS")) {
+                    const badge = document.createElement('div');
+                    badge.className = `absolute top-1 left-1 text-[8px] font-black uppercase px-1.5 py-0.5 rounded shadow-md text-white z-20 pointer-events-none`;
+                    
+                    if (!legalCheck.legal) {
+                        badge.className += " bg-red-600 border border-red-400";
+                        badge.innerText = legalCheck.reason === "Post-Edison" ? "POST-2010" : "BANNED";
+                        wrapper.classList.add("brightness-75", "border-red-500");
+                    } else if (currentActiveFormat === 'genisys' && legalCheck.points > 0) {
+                        badge.className += " bg-indigo-600 border border-indigo-400";
+                        badge.innerText = `+${legalCheck.points} PTS`;
+                    } else if (legalCheck.reason === "Limited") {
+                        badge.className += " bg-orange-600 border border-orange-400";
+                        badge.innerText = "LIMIT 1";
+                    } else if (legalCheck.reason === "Semi-Limit") {
+                        badge.className += " bg-amber-500 border border-amber-400 text-gray-950";
+                        badge.innerText = "LIMIT 2";
+                    }
+                    wrapper.appendChild(badge);
+                }
+
+                img.addEventListener('mouseenter', () => {
+                    if (window.innerWidth >= 1024) {
+                        const desktopPreview = document.getElementById('desktopCardPreview');
+                        desktopPreview.innerHTML = `<img src="${activeImgUrl}" class="w-full h-full object-contain bg-black">`;
+                        desktopPreview.style.opacity = '1';
+                    }
+                });
+                
+                img.addEventListener('mouseleave', () => {
+                    if (window.innerWidth >= 1024) {
+                        const desktopPreview = document.getElementById('desktopCardPreview');
+                        desktopPreview.style.opacity = '0';
+                        setTimeout(() => {
+                            if (desktopPreview.style.opacity === '0') desktopPreview.innerHTML = "";
+                        }, 200);
+                    }
+                });
+                
+                img.addEventListener('click', (e) => {
+                    if (window.innerWidth < 1024) {
+                        e.stopPropagation();
+                        
+                        activeModalTarget.id = card.id;
+                        activeModalTarget.name = card.name;
+                        activeModalTarget.type = type;
+                        activeModalTarget.imagesList = card.imagesList;
+                        activeModalTarget.superType = card.superType;
+                        activeModalTarget.apiBanStatus = card.apiBanStatus;
+                        activeModalTarget.releasedDate = card.releasedDate;
+                        
+                        const currentCount = localDeck[type].filter(c => c.id === card.id).length;
+                        document.getElementById('modalQuantityDisplay').innerText = currentCount;
+                        
+                        const mobileModal = document.getElementById('mobileCardModal');
+                        const modalContainer = document.getElementById('modalImageContainer');
+                        
+                        modalContainer.innerHTML = `<img src="${activeImgUrl}" class="w-full h-full object-contain bg-black">`;
+                        mobileModal.classList.remove('opacity-0', 'pointer-events-none');
+                        mobileModal.classList.add('opacity-100', 'pointer-events-auto');
+                    } else {
+                        removeCardFromDeck(card, type);
+                    }
+                });
+                
+                wrapper.appendChild(img);
+
+                if (card.imagesList.length > 1) {
+                    const swapButton = document.createElement('button');
+                    swapButton.className = "absolute bottom-1 right-1 bg-black/70 hover:bg-black text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 opacity-90 transition sm:opacity-0 sm:group-hover:opacity-100";
+                    swapButton.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> Alt Art`;
+                    
+                    swapButton.addEventListener('click', (e) => cycleCardArtwork(e, index, type));
+                    wrapper.appendChild(swapButton);
+                }
+
+                return wrapper;
+            }
+
+            localDeck.main.forEach((card, idx) => mainGrid.appendChild(buildCardContainer(card, idx, 'main')));
+            localDeck.extra.forEach((card, idx) => extraGrid.appendChild(buildCardContainer(card, idx, 'extra')));
+            localDeck.side.forEach((card, idx) => sideGrid.appendChild(buildCardContainer(card, idx, 'side')));
+
+            saveToLocalStorage();
+            updateDeckSwitcherUI();
+        }
+
+        function sortDeck() {
+            const sortMainAndSide = (a, b) => {
+                const weightA = a.superType.toLowerCase().includes('spell') ? 2 : a.superType.toLowerCase().includes('trap') ? 3 : 1;
+                const weightB = b.superType.toLowerCase().includes('spell') ? 2 : b.superType.toLowerCase().includes('trap') ? 3 : 1;
+                if (weightA !== weightB) return weightA - weightB;
+                return a.name.localeCompare(b.name);
+            };
+
+            localDeck.main.sort(sortMainAndSide);
+            localDeck.side.sort(sortMainAndSide);
+
+            const getExtraDeckWeight = (typeStr) => {
+                const t = typeStr.toLowerCase();
+                if (t.includes('fusion')) return 1;
+                if (t.includes('synchro')) return 2;
+                if (t.includes('xyz')) return 3;
+                if (t.includes('link')) return 4;
+                return 5; 
+            };
+
+            localDeck.extra.sort((a, b) => {
+                const weightA = getExtraDeckWeight(a.superType);
+                const weightB = getExtraDeckWeight(b.superType);
+                if (weightA !== weightB) return weightA - weightB;
+                return a.name.localeCompare(b.name);
+            });
+
+            renderDeckView();
+        }
+
+        // Action Bindings and Interactive Global Observers
+        document.getElementById('searchBtn').addEventListener('click', searchCards);
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchCards();
+        });
+        
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            localDeck.main = []; localDeck.extra = []; localDeck.side = [];
+            renderDeckView();
+        });
+        
+        document.getElementById('sortBtn').addEventListener('click', sortDeck);
+
+        // Format Switcher Trigger Observer Allocation Handler Node
+        document.getElementById('formatSelector').addEventListener('change', (e) => {
+            currentActiveFormat = e.target.value;
+            const trackerBlock = document.getElementById('genisysTrackerBlock');
+            if (currentActiveFormat === 'genisys') {
+                trackerBlock.classList.remove('hidden');
+            } else {
+                trackerBlock.classList.add('hidden');
+            }
+            renderDeckView();
+        });
+
+        // Input Observers for Profile Title Tracking
+        document.getElementById('boxNameInput').addEventListener('input', () => {
+            const currentName = document.getElementById('boxNameInput').value.trim() || "Unnamed Deck Profile";
+            
+            const activeDeckIndex = deckCollection.findIndex(d => d.id === activeDeckId);
+            if (activeDeckIndex !== -1) {
+                deckCollection[activeDeckIndex].name = currentName;
+            }
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                decks: deckCollection,
+                activeDeckId: activeDeckId
+            }));
+
+            const switcher = document.getElementById('deckSwitcher');
+            if (switcher && switcher.options[switcher.selectedIndex]) {
+                switcher.options[switcher.selectedIndex].text = currentName;
+            }
+        });
+
+        document.getElementById('deckSwitcher').addEventListener('change', (e) => {
+            activeDeckId = e.target.value;
+            const selected = deckCollection.find(d => d.id === activeDeckId);
+            if (selected) {
+                localDeck = selected.data;
+                document.getElementById('boxNameInput').value = selected.name;
+                renderDeckView();
+            }
+        });
+
+        document.getElementById('newDeckBtn').addEventListener('click', () => {
+            activeDeckId = 'deck_' + Date.now();
+            const newProfile = {
+                id: activeDeckId,
+                name: `Custom Deck List ${deckCollection.length + 1}`,
+                data: { main: [], extra: [], side: [] }
+            };
+            deckCollection.push(newProfile);
+            localDeck = newProfile.data;
+            
+            document.getElementById('boxNameInput').value = newProfile.name;
+            renderDeckView();
+        });
+        
+        function closeMobileModal() {
+            const mobileModal = document.getElementById('mobileCardModal');
+            mobileModal.classList.remove('opacity-100', 'pointer-events-auto');
+            mobileModal.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                if (mobileModal.classList.contains('opacity-0')) {
+                    document.getElementById('modalImageContainer').innerHTML = "";
+                }
+            }, 200);
+        }
+        
+        document.getElementById('closeModalBtn').addEventListener('click', closeMobileModal);
+        document.getElementById('mobileCardModal').addEventListener('click', closeMobileModal);
+
+        function refreshModalQuantity() {
+            if (!activeModalTarget.id) return;
+            const currentCount = localDeck[activeModalTarget.type].filter(c => c.id === activeModalTarget.id).length;
+            document.getElementById('modalQuantityDisplay').innerText = currentCount;
+            if (currentCount === 0) closeMobileModal();
+        }
+        
+        document.getElementById('modalPlusBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = activeModalTarget.type;
+            
+            if (localDeck.main.length >= 60 && type === 'main') return alert("Main deck limit reached.");
+            if (localDeck.extra.length >= 15 && type === 'extra') return alert("Extra deck limit reached.");
+            if (localDeck.side.length >= 15 && type === 'side') return alert("Side deck limit reached.");
+            
+            const globalCount = ['main', 'extra', 'side'].reduce((acc, t) => acc + localDeck[t].filter(c => c.id === activeModalTarget.id).length, 0);
+            
+            const check = evaluateCardLegality(activeModalTarget.name, activeModalTarget.superType, activeModalTarget.apiBanStatus, activeModalTarget.releasedDate);
+            if (globalCount >= check.maxAllowed) {
+                return alert(`Format rules restrict this card to a maximum allocation of (${check.maxAllowed}) copies.`);
+            }
+        
+            localDeck[type].push({
+                id: activeModalTarget.id,
+                name: activeModalTarget.name,
+                imagesList: activeModalTarget.imagesList,
+                superType: activeModalTarget.superType,
+                apiBanStatus: activeModalTarget.apiBanStatus,
+                releasedDate: activeModalTarget.releasedDate,
+                currentArtIndex: 0
+            });
+            
+            renderDeckView();
+            refreshModalQuantity();
+        });
+        
+        document.getElementById('modalMinusBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = activeModalTarget.type;
+            const targetIdx = localDeck[type].findLastIndex(c => c.id === activeModalTarget.id);
+            if (targetIdx !== -1) {
+                localDeck[type].splice(targetIdx, 1);
+                renderDeckView();
+                refreshModalQuantity();
+            }
+        });
+        
+        document.getElementById('modalDeleteBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = activeModalTarget.type;
+            localDeck[type] = localDeck[type].filter(c => c.id !== activeModalTarget.id);
+            renderDeckView();
+            closeMobileModal();
+        });
+        
+        // Initial clean boot synchronization handler 
+        const selectedOnBoot = deckCollection.find(d => d.id === activeDeckId);
+        if (selectedOnBoot) {
+            document.getElementById('boxNameInput').value = selectedOnBoot.name;
+        }
+        renderDeckView();
+    </script>
+</body>
+</html>
