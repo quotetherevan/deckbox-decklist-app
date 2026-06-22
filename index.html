@@ -458,10 +458,24 @@
 
         // Input Observers for Profile Title Tracking
         document.getElementById('boxNameInput').addEventListener('input', () => {
-            saveToLocalStorage();
+            const currentName = document.getElementById('boxNameInput').value.trim() || "Unnamed Deck Profile";
+            
+            // 1. Instantly update the name inside the underlying data array
+            const activeDeckIndex = deckCollection.findIndex(d => d.id === activeDeckId);
+            if (activeDeckIndex !== -1) {
+                deckCollection[activeDeckIndex].name = currentName;
+            }
+            
+            // 2. Commit it to localStorage immediately as they type
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                decks: deckCollection,
+                activeDeckId: activeDeckId
+            }));
+
+            // 3. Update the visual dropdown option text live
             const switcher = document.getElementById('deckSwitcher');
             if (switcher && switcher.options[switcher.selectedIndex]) {
-                switcher.options[switcher.selectedIndex].text = document.getElementById('boxNameInput').value.trim() || "Unnamed Deck Profile";
+                switcher.options[switcher.selectedIndex].text = currentName;
             }
         });
 
