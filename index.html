@@ -556,28 +556,46 @@
             
                 // Formulate Overlay Visual Badging Elements
                 const legalCheck = evaluateCardLegality(card.name, card.superType, card.apiBanStatus, card.releasedDate);
-                if (!legalCheck.legal || (legalCheck.reason !== "Unlimited" && legalCheck.reason !== "0 PTS")) {
+
+                // Normalize the reason to lowercase for foolproof string matching
+                const normalizedReason = (legalCheck.reason || "").toLowerCase();
+                
+                if (!legalCheck.legal || (normalizedReason !== "unlimited" && normalizedReason !== "0 pts")) {
                     const badge = document.createElement('div');
                     badge.className = `absolute top-1 left-1 text-[8px] font-black uppercase px-1.5 py-0.5 rounded shadow-md text-white z-20 pointer-events-none`;
                     
                     if (!legalCheck.legal) {
                         badge.className += " bg-red-600 border border-red-400";
-                        if (legalCheck.reason === "Post-Edison") badge.innerText = "POST-2010";
-                        else if (legalCheck.reason === "Post-GOAT") badge.innerText = "POST-2005";
+                        if (normalizedReason.includes("edison")) badge.innerText = "POST-2010";
+                        else if (normalizedReason.includes("goat")) badge.innerText = "POST-2005";
                         else badge.innerText = "BANNED";
                         
                         wrapper.classList.add("brightness-75", "border-red-500");
                     } else if (currentActiveFormat === 'genisys' && legalCheck.points > 0) {
                         badge.className += " bg-indigo-600 border border-indigo-400";
                         badge.innerText = `+${legalCheck.points} PTS`;
-                    } else if (legalCheck.reason === "Limited" || legalCheck.reason === "Limited") {
+                    } else if (normalizedReason === "limited" || normalizedReason === "limit 1") {
                         badge.className += " bg-orange-600 border border-orange-400";
                         badge.innerText = "LIMIT 1";
-                    } else if (legalCheck.reason === "Semi-Limit" || legalCheck.reason === "Semi-Limited") {
+                    } else if (normalizedReason.includes("semi")) {
+                        // This captures "Semi-Limit", "Semi-Limited", "semi-limit", etc.
                         badge.className += " bg-amber-500 border border-amber-400 text-gray-950";
                         badge.innerText = "LIMIT 2";
+                    } else {
+                        // Catch-all safety fallback if reason has a weird custom string but maxAllowed is restricted
+                        if (legalCheck.maxAllowed === 1) {
+                            badge.className += " bg-orange-600 border border-orange-400";
+                            badge.innerText = "LIMIT 1";
+                        } else if (legalCheck.maxAllowed === 2) {
+                            badge.className += " bg-amber-500 border border-amber-400 text-gray-950";
+                            badge.innerText = "LIMIT 2";
+                        }
                     }
-                    wrapper.appendChild(badge);
+                    
+                    // Only append if we actually ended up setting text to prevent empty floating borders
+                    if (badge.innerText) {
+                        wrapper.appendChild(badge);
+                    }
                 }
             
                 // 4. INTERACTIVE EVENT LISTENERS (Your mouse tracking and deck adjustments)
