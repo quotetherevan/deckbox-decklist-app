@@ -137,6 +137,17 @@
 
         let activeModalTarget = { id: null, name: null, type: null, imagesList: null, superType: null };
 
+        const STORAGE_KEY = 'ygo_deckbox_v1';
+        // This pulls the deck from the browser cache when the page loads
+        const cachedDeck = localStorage.getItem(STORAGE_KEY);
+        if (cachedDeck) {
+            try {
+                localDeck = JSON.parse(cachedDeck);
+            } catch (e) {
+                console.error("Error parsing cached deck data, resetting storage.");
+            }
+        }
+        
         async function searchCards() {
             const query = document.getElementById('searchInput').value.trim();
             const resultsPanel = document.getElementById('searchResults');
@@ -341,6 +352,8 @@
             localDeck.main.forEach((card, idx) => mainGrid.appendChild(buildCardContainer(card, idx, 'main')));
             localDeck.extra.forEach((card, idx) => extraGrid.appendChild(buildCardContainer(card, idx, 'extra')));
             localDeck.side.forEach((card, idx) => sideGrid.appendChild(buildCardContainer(card, idx, 'side')));
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(localDeck));
         }
 
         function sortDeck() {
