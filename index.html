@@ -31,9 +31,9 @@
                         <button id="searchBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg text-xs transition">
                             Search Card
                         </button>
+                        <!-- REMOVED EXTRA OPTION HERE -->
                         <select id="targetDeck" class="border rounded-lg text-xs bg-gray-50 px-2 font-semibold text-gray-700">
                             <option value="main">Add to Main</option>
-                            <option value="extra">Add to Extra</option>
                             <option value="side">Add to Side</option>
                         </select>
                     </div>
@@ -138,7 +138,6 @@
         async function searchCards() {
             const query = document.getElementById('searchInput').value.trim();
             const resultsPanel = document.getElementById('searchResults');
-            const targetType = document.getElementById('targetDeck').value; 
             
             if (!query) return;
             resultsPanel.innerHTML = '<p class="text-xs text-gray-400 col-span-2 text-center py-8">Searching database...</p>';
@@ -154,21 +153,9 @@
                     return;
                 }
 
-                let filteredData = data.data;
-                
-                if (targetType === 'extra') {
-                    const validExtraDeckTypes = ['fusion monster', 'synchro monster', 'xyz monster', 'link monster'];
-                    filteredData = filteredData.filter(card => 
-                        card.type && validExtraDeckTypes.some(type => card.type.toLowerCase().includes(type))
-                    );
-                }
+                // REMOVED old Extra Deck conditional filter logic entirely here to prevent search bugs
 
-                if (filteredData.length === 0) {
-                    resultsPanel.innerHTML = '<p class="text-xs text-amber-400 col-span-2 text-center py-8">No matching Extra Deck cards found.</p>';
-                    return;
-                }
-
-                const matches = filteredData.slice(0, 20);
+                const matches = data.data.slice(0, 20);
                 matches.forEach(card => {
                     const cardId = card.id;
                     const cardName = card.name;
@@ -203,28 +190,26 @@
         function addCardToDeck(id, name, imagesList, superType) {
             let targetType = document.getElementById('targetDeck').value; 
             
-            // --- SEAMLESS EXTRA DECK ROUTING ---
+            // --- SEAMLESS EXTRA DECK ROUTING (FIXED) ---
             const lowerSuperType = superType.toLowerCase();
             const isExtraDeckMonster = ['fusion', 'synchro', 'xyz', 'link'].some(type => lowerSuperType.includes(type));
             
-            // If it's an Extra Deck monster and "Add to Main" is selected, seamlessly redirect it
-            if (isExtraDeckMonster && targetType === 'main') {
+            // If it belongs in the Extra Deck, force targetType to 'extra' (even if Side was selected, unless you want Extra Deck cards in side)
+            // Typically, standard builders force Extra deck archetypes strictly out of Main.
+            if (isExtraDeckMonster) {
                 targetType = 'extra';
             }
             // ------------------------------------
             
-            // Deck size capacity checks based on the final target destination
             if (localDeck.main.length >= 60 && targetType === 'main') return alert("Main deck limit reached.");
             if (localDeck.extra.length >= 15 && targetType === 'extra') return alert("Extra deck limit reached.");
             if (localDeck.side.length >= 15 && targetType === 'side') return alert("Side deck limit reached.");
         
-            // Count total global copies of this card (Main + Extra + Side)
             const mainCopies = localDeck.main.filter(card => card.id === id).length;
             const extraCopies = localDeck.extra.filter(card => card.id === id).length;
             const sideCopies = localDeck.side.filter(card => card.id === id).length;
             const totalCopies = mainCopies + extraCopies + sideCopies;
         
-            // Enforce the 3-copy limit rule globally
             if (totalCopies >= 3) {
                 return alert(`You cannot add more than 3 copies of "${name}" to your deck list.`);
             }
@@ -262,9 +247,9 @@
         function updateMainDeckRatios() {
             let monsters = 0, spells = 0, traps = 0;
             localDeck.main.forEach(card => {
-                if (card.superType === 'Monster') monsters++;
-                else if (card.superType === 'Spell') spells++;
-                else if (card.superType === 'Trap') traps++;
+                if (card.superType.toLowerCase().includes('spell')) spells++;
+                else if (card.superType.toLowerCase().includes('trap')) traps++;
+                else monsters++; // Safe fallback for any main deck monster variation
             });
             document.getElementById('monsterCount').innerText = monsters;
             document.getElementById('spellCount').innerText = spells;
@@ -296,7 +281,6 @@
 
                 const largeArtUrl = `https://images.ygoprodeck.com/images/cards/${card.id}.jpg`;
                 
-                // 1. Desktop Hover Interaction
                 img.addEventListener('mouseenter', () => {
                     if (window.innerWidth >= 1024) {
                         const desktopPreview = document.getElementById('desktopCardPreview');
@@ -315,7 +299,6 @@
                     }
                 });
                 
-                // 2. Single Master Click Controller (No duplicate click listeners!)
                 img.addEventListener('click', (e) => {
                     if (window.innerWidth < 1024) {
                         e.stopPropagation();
