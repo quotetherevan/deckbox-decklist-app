@@ -276,12 +276,11 @@
                 img.className = "w-full h-full cursor-pointer hover:scale-105 transition duration-150 object-contain";
                 img.addEventListener('click', () => removeCardFromDeck(index, type));
 
-                // --- UPDATED: RESPONSIVE DEVICE-AWARE PREVIEW LOGIC ---
+                // --- UNIFIED CLICK & PREVIEW LOGIC (REPLACE ALL OLD CLICK/HOVER LISTENERS FOR IMG) ---
                 const largeArtUrl = `https://images.ygoprodeck.com/images/cards/${card.id}.jpg`;
                 
-                // A. Desktop Interaction Layer (Pointer Hover)
+                // 1. Desktop Hover Interaction
                 img.addEventListener('mouseenter', () => {
-                    // Only fire desktop preview if we are on an active mouse/pointer viewport layout
                     if (window.innerWidth >= 1024) {
                         const desktopPreview = document.getElementById('desktopCardPreview');
                         desktopPreview.innerHTML = `<img src="${largeArtUrl}" class="w-full h-full object-contain bg-black">`;
@@ -299,12 +298,10 @@
                     }
                 });
                 
-                // B. Mobile Interaction Layer (Click/Tap Overlay)
+                // 2. The Single, Master Click Controller
                 img.addEventListener('click', (e) => {
-                    // If on screen width below desktop thresholds, execute the fullscreen viewport modal
                     if (window.innerWidth < 1024) {
-                        e.stopPropagation(); // Block execution string from firing removeCardFromDeck!
-                        
+                        // MOBILE TRAP: Open the modal overlay instead of deleting
                         const mobileModal = document.getElementById('mobileCardModal');
                         const modalContainer = document.getElementById('modalImageContainer');
                         
@@ -312,12 +309,11 @@
                         mobileModal.classList.remove('opacity-0', 'pointer-events-none');
                         mobileModal.classList.add('opacity-100', 'pointer-events-auto');
                     } else {
-                        // If on desktop, single-clicking a thumbnail executes removal as normal
+                        // DESKTOP TRAP: Remove the card normally
                         removeCardFromDeck(index, type);
                     }
                 });
-                // -----------------------------------------------------
-                
+                // ----------------------------------------------------------------------------------                
                 wrapper.appendChild(img);
 
                 // Add artwork selector overlay pill badge ONLY if variant options exist in array bundle
