@@ -201,23 +201,26 @@
         }
 
         function addCardToDeck(id, name, imagesList, superType) {
+            // 1. Grab the initial choice from the dropdown ('main' or 'side')
             let targetType = document.getElementById('targetDeck').value; 
             
-            // --- SEAMLESS EXTRA DECK ROUTING (FIXED) ---
             const lowerSuperType = superType.toLowerCase();
             const isExtraDeckMonster = ['fusion', 'synchro', 'xyz', 'link'].some(type => lowerSuperType.includes(type));
             
-            // If it belongs in the Extra Deck, force targetType to 'extra' (even if Side was selected, unless you want Extra Deck cards in side)
-            // Typically, standard builders force Extra deck archetypes strictly out of Main.
-            if (isExtraDeckMonster) {
+            // --- SMART ROUTING FIXED ---
+            // Only force the card into the Extra Deck if the user was trying to put it in the Main Deck.
+            // If they selected 'side', let it go to the Side Deck naturally!
+            if (isExtraDeckMonster && targetType === 'main') {
                 targetType = 'extra';
             }
-            // ------------------------------------
+            // ----------------------------
             
+            // 2. Check the capacity limits of the CORRECT actual target location
             if (localDeck.main.length >= 60 && targetType === 'main') return alert("Main deck limit reached.");
             if (localDeck.extra.length >= 15 && targetType === 'extra') return alert("Extra deck limit reached.");
             if (localDeck.side.length >= 15 && targetType === 'side') return alert("Side deck limit reached.");
         
+            // 3. Calculate global copies across the entire pool (Max 3 total per tournament rules)
             const mainCopies = localDeck.main.filter(card => card.id === id).length;
             const extraCopies = localDeck.extra.filter(card => card.id === id).length;
             const sideCopies = localDeck.side.filter(card => card.id === id).length;
@@ -227,6 +230,7 @@
                 return alert(`You cannot add more than 3 copies of "${name}" to your deck list.`);
             }
         
+            // 4. Safely push to the validated destination
             localDeck[targetType].push({ 
                 id, 
                 name, 
