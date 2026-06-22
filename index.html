@@ -346,7 +346,7 @@
             
             if (!query) return;
             resultsPanel.innerHTML = '<p class="text-xs text-gray-400 col-span-2 text-center py-8">Searching database...</p>';
-
+        
             try {
                 const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?fname=${encodeURIComponent(query)}`);
                 const data = await response.json();
@@ -357,7 +357,7 @@
                     resultsPanel.innerHTML = '<p class="text-xs text-red-400 col-span-2 text-center py-8">No matching cards found.</p>';
                     return;
                 }
-
+        
                 const matches = data.data.slice(0, 20);
                 matches.forEach(card => {
                     const cardId = card.id;
@@ -365,10 +365,9 @@
                     const imagesList = card.card_images.map(img => img.image_url_small);
                     const defaultImgUrl = imagesList[0];
                     
-                    // Harvest data parameters required for modern or legacy format compliance engines
                     const apiBanStatus = card.banlist_info ? card.banlist_info.ban_tcg : "Unlimited";
                     const releasedDate = card.misc_info ? card.misc_info[0]?.tcg_date : null;
-
+        
                     let superType = 'Monster';
                     if (card.type.toLowerCase().includes('spell')) {
                         superType = 'Spell';
@@ -377,18 +376,47 @@
                     } else {
                         superType = card.type; 
                     }
-
+        
+                    // Create the wrapper card container
                     const cardDiv = document.createElement('div');
-                    cardDiv.className = "bg-gray-50 border rounded-lg p-1.5 flex flex-col items-center cursor-pointer hover:border-blue-500 hover:shadow-sm transition";
+                    cardDiv.className = "relative bg-gray-50 border rounded-lg p-1.5 flex flex-col items-center cursor-pointer hover:border-blue-500 hover:shadow-sm transition";
+                    
+                    // Build the base HTML
                     cardDiv.innerHTML = `
                         <img src="${defaultImgUrl}" class="w-full h-auto rounded mb-1">
                         <div class="text-[10px] font-bold text-gray-700 text-center line-clamp-2">${cardName}</div>
                     `;
                     
+                    // --- NEW: Genisys Point Overlay Preview Code Block ---
+                    if (currentActiveFormat === 'genisys') {
+                        const lowerType = superType.toLowerCase();
+                        const isIllegal = FORMAT_CONFIGS.genisys.illegalTypes.some(t => lowerType.includes(t));
+                        
+                        const badge = document.createElement('div');
+                        badge.className = "absolute top-2 left-2 text-[8px] font-black uppercase px-1.5 py-0.5 rounded shadow-md text-white z-20 pointer-events-none";
+                        
+                        if (isIllegal) {
+                            badge.className += " bg-red-600 border border-red-400";
+                            badge.innerText = "BANNED";
+                            cardDiv.classList.add("brightness-75");
+                        } else {
+                            const points = GENISYS_POINTS_DB[cardName] !== undefined ? GENISYS_POINTS_DB[cardName] : 0;
+                            if (points > 0) {
+                                badge.className += " bg-indigo-600 border border-indigo-400";
+                                badge.innerText = `+${points} PTS`;
+                            } else {
+                                badge.className += " bg-gray-600 border border-gray-400";
+                                badge.innerText = "0 PTS";
+                            }
+                        }
+                        cardDiv.appendChild(badge);
+                    }
+                    // -----------------------------------------------------
+                    
                     cardDiv.addEventListener('click', () => addCardToDeck(cardId, cardName, imagesList, superType, apiBanStatus, releasedDate));
                     resultsPanel.appendChild(cardDiv);
                 });
-
+        
             } catch (error) {
                 resultsPanel.innerHTML = '<p class="text-xs text-red-400 col-span-2 text-center py-8">Error accessing database.</p>';
             }
