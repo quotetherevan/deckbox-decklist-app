@@ -265,7 +265,7 @@
                 
                 const img = document.createElement('img');
                 img.src = activeImgUrl;
-                img.className = "w-full h-full cursor-pointer hover:scale-105 transition duration-150 object-cover";
+                img.className = "w-full h-full cursor-pointer hover:scale-105 transition duration-150 object-contain";
                 img.addEventListener('click', () => removeCardFromDeck(index, type));
 
                 // --- NEW: HOVER/LARGE PREVIEW LOGIC ---
@@ -277,7 +277,7 @@
                     const largeArtUrl = `https://images.ygoprodeck.com/images/cards/${card.id}.jpg`;
                     
                     // Populate and display the fixed preview
-                    previewContainer.innerHTML = `<img src="${largeArtUrl}" class="w-full h-full object-cover">`;
+                    previewContainer.innerHTML = `<img src="${largeArtUrl}" class="w-full h-full object-contain">`;
                     previewContainer.style.opacity = '1';
                 });
 
