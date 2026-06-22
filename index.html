@@ -251,20 +251,18 @@
         }
 
         // Pull card item safely from state configuration array without index-shifting side effects
-        function removeCardFromDeck(index, type) {
-            // 1. Get a reference to the card the user actually clicked on
-            const targetCard = localDeck[type][index];
-            if (!targetCard) return;
+        function removeCardFromDeck(cardObject, type) {
+            if (!cardObject) return;
         
-            // 2. Find the absolute last occurrence of this card ID in the array
-            const actualIndex = localDeck[type].findLastIndex(c => c.id === targetCard.id);
+            // Find the exact index of THIS specific card object instance in the array
+            const actualIndex = localDeck[type].indexOf(cardObject);
         
-            // 3. Remove only that single instance safely
+            // Remove only that single, specific memory reference safely
             if (actualIndex !== -1) {
                 localDeck[type].splice(actualIndex, 1);
             }
         
-            // 4. Update the layout
+            // Refresh the layout view
             renderDeckView();
         }
 
@@ -335,14 +333,12 @@
                     if (window.innerWidth < 1024) {
                         e.stopPropagation();
                         
-                        // Save complete configuration parameters to state target
                         activeModalTarget.id = card.id;
                         activeModalTarget.name = card.name;
                         activeModalTarget.type = type;
                         activeModalTarget.imagesList = card.imagesList;
                         activeModalTarget.superType = card.superType;
                         
-                        // Calculate current total instances inside this specific tracking segment
                         const currentCount = localDeck[type].filter(c => c.id === card.id).length;
                         document.getElementById('modalQuantityDisplay').innerText = currentCount;
                         
@@ -353,7 +349,8 @@
                         mobileModal.classList.remove('opacity-0', 'pointer-events-none');
                         mobileModal.classList.add('opacity-100', 'pointer-events-auto');
                     } else {
-                        removeCardFromDeck(index, type);
+                        // PASS THE ENTIRE CARD OBJECT AND THE DECK TYPE, NOT THE INDEX
+                        removeCardFromDeck(card, type);
                     }
                 });
                 wrapper.appendChild(img);
