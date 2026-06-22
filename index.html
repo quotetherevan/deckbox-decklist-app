@@ -240,34 +240,11 @@
 
         let activeModalTarget = { id: null, name: null, type: null, imagesList: null, superType: null, apiBanStatus: null, releasedDate: null };
         
-        // Engine Legality Pipeline Logic Matcher
         function evaluateCardLegality(cardName, cardType, apiBanStatus, releaseDate) {
             const format = currentActiveFormat;
-
-            // Bypasses all banlist throttling for unreleased cards or custom decklists
+            
             if (format === 'unrestricted') {
                 return { legal: true, reason: "Unlimited", points: 0, maxAllowed: 3 }; 
-            }
-
-            if (format === 'goat') {
-                if (releaseDate) {
-                    const release = new Date(releaseDate);
-                    const goatCutoff = new Date(FORMAT_CONFIGS.goat.maxReleaseDate);
-                    if (release > goatCutoff) {
-                        return { legal: false, reason: "Post-GOAT", points: 0, maxAllowed: 0 };
-                    }
-                }
-                // You can handle standard Forbidden/Limited text or explicit GOAT list overrides here
-                if (apiBanStatus === "Forbidden") return { legal: false, reason: "Banned", points: 0, maxAllowed: 0 };
-                return { legal: true, reason: "Legal", points: 0, maxAllowed: 3 };
-            }
-            
-            if (format === 'ocg') {
-                // Dynamically checks your card's OCG data properties if available from the API payload
-                if (card.banlist_info?.ban_ocg === "Forbidden") return { legal: false, reason: "Banned", points: 0, maxAllowed: 0 };
-                if (card.banlist_info?.ban_ocg === "Limited") return { legal: true, reason: "Limited", points: 0, maxAllowed: 1 };
-                if (card.banlist_info?.ban_ocg === "Semi-Limited") return { legal: true, reason: "Semi-Limit", points: 0, maxAllowed: 2 };
-                return { legal: true, reason: "Unlimited", points: 0, maxAllowed: 3 };
             }
             
             if (format === 'genisys') {
@@ -279,6 +256,20 @@
                 return { legal: true, reason: `${points} PTS`, points: points, maxAllowed: 3 };
             }
             
+            // --- GOAT Format Legality Engine ---
+            if (format === 'goat') {
+                if (releaseDate) {
+                    const release = new Date(releaseDate);
+                    const goatCutoff = new Date(FORMAT_CONFIGS.goat.maxReleaseDate);
+                    if (release > goatCutoff) {
+                        return { legal: false, reason: "Post-GOAT", points: 0, maxAllowed: 0 };
+                    }
+                }
+                if (apiBanStatus === "Forbidden") return { legal: false, reason: "Banned", points: 0, maxAllowed: 0 };
+                return { legal: true, reason: "Unlimited", points: 0, maxAllowed: 3 };
+            }
+            
+            // --- Edison Format Legality Engine ---
             if (format === 'edison') {
                 if (releaseDate) {
                     const release = new Date(releaseDate);
@@ -296,6 +287,7 @@
                 return { legal: true, reason: "Unlimited", points: 0, maxAllowed: 3 };
             }
             
+            // Default Advanced TCG check
             if (apiBanStatus === "Forbidden") return { legal: false, reason: "Banned", points: 0, maxAllowed: 0 };
             if (apiBanStatus === "Limited") return { legal: true, reason: "Limited", points: 0, maxAllowed: 1 };
             if (apiBanStatus === "Semi-Limited") return { legal: true, reason: "Semi-Limit", points: 0, maxAllowed: 2 };
@@ -361,7 +353,25 @@
                     return;
                 }
         
-                const matches = data.data.slice(0, 20);
+                // Filter out cards that are newer than the selected format's cutoff date
+                const activeFormatConfig = FORMAT_CONFIGS[currentActiveFormat];
+                let filteredCards = data.data;
+        
+                if (activeFormatConfig && activeFormatConfig.maxReleaseDate) {
+                    const cutoffDate = new Date(activeFormatConfig.maxReleaseDate);
+                    filteredCards = data.data.filter(card => {
+                        const releaseStr = card.misc_info ? card.misc_info[0]?.tcg_date : null;
+                        if (!releaseStr) return false; // If there's no release date data, hide it safely
+                        return new Date(releaseStr) <= cutoffDate;
+                    });
+                }
+        
+                if (filteredCards.length === 0) {
+                    resultsPanel.innerHTML = '<p class="text-xs text-orange-400 col-span-2 text-center py-8">Cards found, but none are legal for this format.</p>';
+                    return;
+                }
+        
+                const matches = filteredCards.slice(0, 20);
                 matches.forEach(card => {
                     const cardId = card.id;
                     const cardName = card.name;
@@ -380,17 +390,15 @@
                         superType = card.type; 
                     }
         
-                    // Create the wrapper card container
                     const cardDiv = document.createElement('div');
                     cardDiv.className = "relative bg-gray-50 border rounded-lg p-1.5 flex flex-col items-center cursor-pointer hover:border-blue-500 hover:shadow-sm transition";
                     
-                    // Build the base HTML
                     cardDiv.innerHTML = `
                         <img src="${defaultImgUrl}" class="w-full h-auto rounded mb-1">
                         <div class="text-[10px] font-bold text-gray-700 text-center line-clamp-2">${cardName}</div>
                     `;
                     
-                    // --- NEW: Genisys Point Overlay Preview Code Block ---
+                    // Genisys Point Overlay Preview
                     if (currentActiveFormat === 'genisys') {
                         const lowerType = superType.toLowerCase();
                         const isIllegal = FORMAT_CONFIGS.genisys.illegalTypes.some(t => lowerType.includes(t));
@@ -414,7 +422,6 @@
                         }
                         cardDiv.appendChild(badge);
                     }
-                    // -----------------------------------------------------
                     
                     cardDiv.addEventListener('click', () => addCardToDeck(cardId, cardName, imagesList, superType, apiBanStatus, releasedDate));
                     resultsPanel.appendChild(cardDiv);
@@ -670,16 +677,26 @@
         document.getElementById('sortBtn').addEventListener('click', sortDeck);
 
         // Format Switcher Trigger Observer Allocation Handler Node
-        document.getElementById('formatSelector').addEventListener('change', (e) => {
-            currentActiveFormat = e.target.value;
-            const trackerBlock = document.getElementById('genisysTrackerBlock');
-            if (currentActiveFormat === 'genisys') {
-                trackerBlock.classList.remove('hidden');
-            } else {
-                trackerBlock.classList.add('hidden');
-            }
-            renderDeckView();
-        });
+            document.getElementById('formatSelector').addEventListener('change', (e) => {
+                currentActiveFormat = e.target.value;
+                
+                // Toggle the points dashboard tracker view
+                const trackerBlock = document.getElementById('genisysTrackerBlock');
+                if (currentActiveFormat === 'genisys') {
+                    trackerBlock.classList.remove('hidden');
+                } else {
+                    trackerBlock.classList.add('hidden');
+                }
+                
+                // FORCE RE-RENDER: This re-evaluates card type compliance for everything currently in the deck
+                renderDeckView(); 
+                
+                // Also refresh the search panel if there are active results displayed
+                const searchInput = document.getElementById('searchInput').value.trim();
+                if (searchInput) {
+                    searchCards();
+                }
+            });
 
         // Input Observers for Profile Title Tracking
         document.getElementById('boxNameInput').addEventListener('input', () => {
