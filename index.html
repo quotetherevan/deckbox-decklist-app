@@ -31,7 +31,6 @@
                         <button id="searchBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg text-xs transition">
                             Search Card
                         </button>
-                        <!-- REMOVED EXTRA OPTION HERE -->
                         <select id="targetDeck" class="border rounded-lg text-xs bg-gray-50 px-2 font-semibold text-gray-700">
                             <option value="main">Add to Main</option>
                             <option value="side">Add to Side</option>
@@ -47,18 +46,22 @@
             <section class="lg:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col h-[850px] overflow-y-auto space-y-6">
                 <div class="border-b pb-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <!-- Flex container handles name editing, switching, and creating -->
                         <div class="flex flex-wrap items-center gap-3 flex-1">
-                            <input type="text" id="boxNameInput" value="" 
-                                   class="text-xl font-extrabold text-gray-900 border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none pb-1">
+                            <div class="flex flex-col min-w-[200px]">
+                                <label for="boxNameInput" class="text-[9px] font-black uppercase tracking-wider text-gray-400 mb-0.5">Deck Profile Name</label>
+                                <input type="text" id="boxNameInput" placeholder="Enter Deck Profile Name..." 
+                                       class="text-xl font-extrabold text-gray-900 border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none pb-1">
+                            </div>
                             
-                            <!-- Dynamic Deck Switcher Dropdown -->
-                            <select id="deckSwitcher" class="border rounded-lg text-xs bg-gray-50 px-2 py-1.5 font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                            <div class="flex flex-col pt-3">
+                                <select id="deckSwitcher" class="border rounded-lg text-xs bg-gray-50 px-2 py-1.5 font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                            </div>
                             
-                            <!-- Create New Deck Button -->
-                            <button id="newDeckBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs transition flex items-center gap-1">
-                                <i class="fa-solid fa-plus"></i> New Deck
-                            </button>
+                            <div class="flex flex-col pt-3">
+                                <button id="newDeckBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs transition flex items-center gap-1">
+                                    <i class="fa-solid fa-plus"></i> New Deck
+                                </button>
+                            </div>
                         </div>
                         <button id="clearBtn" class="text-xs text-red-500 hover:underline font-semibold self-end sm:self-center">Clear Box</button>
                     </div>
@@ -95,13 +98,11 @@
                     <div id="mainDeckGrid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2"></div>
                 </div>
 
-                <!-- UPDATED EXTRA DECK GRID -->
                 <div class="border-t pt-4">
                     <h3 class="text-xs font-black uppercase tracking-wider text-gray-400 mb-3">Extra Deck (<span id="extraCount">0</span>/15)</h3>
                     <div id="extraDeckGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-2"></div>
                 </div>
                 
-                <!-- UPDATED SIDE DECK GRID -->
                 <div class="border-t pt-4">
                     <h3 class="text-xs font-black uppercase tracking-wider text-purple-500 mb-3 font-bold">Side Deck (<span id="sideCount">0</span>/15)</h3>
                     <div id="sideDeckGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-2"></div>
@@ -115,9 +116,7 @@
 
     <div id="mobileCardModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
         <div class="relative max-w-xs w-full h-[85%] bg-gray-900 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20 flex flex-col">
-            
             <div id="modalImageContainer" class="flex-1 w-full bg-black"></div>
-            
             <div class="bg-gray-800 p-4 flex flex-col gap-3 border-t border-white/10">
                 <div class="flex items-center justify-between bg-gray-950 px-3 py-2 rounded-xl border border-white/5">
                     <span class="text-xs font-bold text-gray-400">Copies in Deck:</span>
@@ -127,12 +126,10 @@
                         <button id="modalPlusBtn" class="w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-black flex items-center justify-center transition border border-indigo-400/20">+</button>
                     </div>
                 </div>
-                
                 <button id="modalDeleteBtn" class="w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/20 active:bg-red-600 active:text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition">
                     <i class="fa-solid fa-trash text-[10px]"></i> Remove Entire Playset
                 </button>
             </div>
-    
             <button id="closeModalBtn" class="absolute top-3 right-3 bg-black/60 text-white w-8 h-8 rounded-full flex items-center justify-center border border-white/20 active:bg-black transition">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -144,10 +141,10 @@
 
         // Initial state structures
         let deckCollection = []; 
-        let activeDeckId = null;  // Tracks which deck is currently loaded
-        let localDeck = { main: [], extra: [], side: [] }; // The active working deck
+        let activeDeckId = null;  
+        let localDeck = { main: [], extra: [], side: [] }; 
         
-        // Load collection from local storage on page boot
+        // Load collections securely on initialization
         const cachedCollection = localStorage.getItem(STORAGE_KEY);
         if (cachedCollection) {
             try {
@@ -155,12 +152,10 @@
                 deckCollection = parsed.decks || [];
                 activeDeckId = parsed.activeDeckId || null;
                 
-                // Find and load the active deck out of the collection
                 const currentSavedDeck = deckCollection.find(d => d.id === activeDeckId);
                 if (currentSavedDeck) {
                     localDeck = currentSavedDeck.data;
                 } else if (deckCollection.length > 0) {
-                    // Fallback to the first deck if active deck is missing
                     activeDeckId = deckCollection[0].id;
                     localDeck = deckCollection[0].data;
                 }
@@ -169,7 +164,7 @@
             }
         }
         
-        // If it's a first-time user or storage was empty, initialize a default profile
+        // Default initialization for empty caches
         if (deckCollection.length === 0) {
             activeDeckId = 'deck_' + Date.now();
             deckCollection.push({
@@ -180,8 +175,39 @@
             localDeck = deckCollection[0].data;
             localStorage.setItem(STORAGE_KEY, JSON.stringify({ decks: deckCollection, activeDeckId }));
         }
+
         let activeModalTarget = { id: null, name: null, type: null, imagesList: null, superType: null };
         
+        // Multi-Deck Synchronization Pipeline Functions
+        function saveToLocalStorage() {
+            const activeDeckIndex = deckCollection.findIndex(d => d.id === activeDeckId);
+            if (activeDeckIndex !== -1) {
+                deckCollection[activeDeckIndex].data = localDeck;
+                deckCollection[activeDeckIndex].name = document.getElementById('boxNameInput').value.trim() || "Unnamed Deck Profile";
+            }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                decks: deckCollection,
+                activeDeckId: activeDeckId
+            }));
+        }
+
+        function updateDeckSwitcherUI() {
+            const switcher = document.getElementById('deckSwitcher');
+            if (!switcher) return;
+            
+            switcher.innerHTML = "";
+            deckCollection.forEach(deck => {
+                const option = document.createElement('option');
+                option.value = deck.id;
+                option.textContent = deck.name;
+                if (deck.id === activeDeckId) {
+                    option.selected = true;
+                    document.getElementById('boxNameInput').value = deck.name;
+                }
+                switcher.appendChild(option);
+            });
+        }
+
         async function searchCards() {
             const query = document.getElementById('searchInput').value.trim();
             const resultsPanel = document.getElementById('searchResults');
@@ -200,12 +226,11 @@
                     return;
                 }
 
-                // REMOVED old Extra Deck conditional filter logic entirely here to prevent search bugs
-
                 const matches = data.data.slice(0, 20);
                 matches.forEach(card => {
                     const cardId = card.id;
                     const cardName = card.name;
+                    // Gather up small assets for grid panels
                     const imagesList = card.card_images.map(img => img.image_url_small);
                     const defaultImgUrl = imagesList[0];
                     
@@ -235,26 +260,19 @@
         }
 
         function addCardToDeck(id, name, imagesList, superType) {
-            // 1. Grab the initial choice from the dropdown ('main' or 'side')
             let targetType = document.getElementById('targetDeck').value; 
             
             const lowerSuperType = superType.toLowerCase();
             const isExtraDeckMonster = ['fusion', 'synchro', 'xyz', 'link'].some(type => lowerSuperType.includes(type));
             
-            // --- SMART ROUTING FIXED ---
-            // Only force the card into the Extra Deck if the user was trying to put it in the Main Deck.
-            // If they selected 'side', let it go to the Side Deck naturally!
             if (isExtraDeckMonster && targetType === 'main') {
                 targetType = 'extra';
             }
-            // ----------------------------
             
-            // 2. Check the capacity limits of the CORRECT actual target location
             if (localDeck.main.length >= 60 && targetType === 'main') return alert("Main deck limit reached.");
             if (localDeck.extra.length >= 15 && targetType === 'extra') return alert("Extra deck limit reached.");
             if (localDeck.side.length >= 15 && targetType === 'side') return alert("Side deck limit reached.");
         
-            // 3. Calculate global copies across the entire pool (Max 3 total per tournament rules)
             const mainCopies = localDeck.main.filter(card => card.id === id).length;
             const extraCopies = localDeck.extra.filter(card => card.id === id).length;
             const sideCopies = localDeck.side.filter(card => card.id === id).length;
@@ -264,7 +282,6 @@
                 return alert(`You cannot add more than 3 copies of "${name}" to your deck list.`);
             }
         
-            // 4. Safely push to the validated destination
             localDeck[targetType].push({ 
                 id, 
                 name, 
@@ -285,13 +302,10 @@
 
         function removeCardFromDeck(cardObject, type) {
             if (!cardObject) return;
-        
             const actualIndex = localDeck[type].indexOf(cardObject);
-        
             if (actualIndex !== -1) {
                 localDeck[type].splice(actualIndex, 1);
             }
-        
             renderDeckView();
         }
 
@@ -300,7 +314,7 @@
             localDeck.main.forEach(card => {
                 if (card.superType.toLowerCase().includes('spell')) spells++;
                 else if (card.superType.toLowerCase().includes('trap')) traps++;
-                else monsters++; // Safe fallback for any main deck monster variation
+                else monsters++; 
             });
             document.getElementById('monsterCount').innerText = monsters;
             document.getElementById('spellCount').innerText = spells;
@@ -324,18 +338,18 @@
                 const wrapper = document.createElement('div');
                 wrapper.className = "relative group w-full aspect-[321/468] rounded shadow-sm border border-transparent bg-gray-100 overflow-hidden";
                 
-                // This is the specific artwork image the user has currently selected via the toggle button
+                // Active variation image resolution hook
                 const activeImgUrl = card.imagesList[card.currentArtIndex];
                 
                 const img = document.createElement('img');
                 img.src = activeImgUrl;
                 img.className = "w-full h-full cursor-pointer hover:scale-105 transition duration-150 object-contain";
-            
-                // --- ENHANCED VARIANT PREVIEW MATCHING ---
-                // Instead of forcing the fallback card ID image, we pass the exact active URL string to the previews!
+
+                // --- DYNAMIC DESKTOP HOVER FIXED TO MIRROR ALT ART ---
                 img.addEventListener('mouseenter', () => {
                     if (window.innerWidth >= 1024) {
                         const desktopPreview = document.getElementById('desktopCardPreview');
+                        // Pull variant resource track directly instead of base ID layout fallback URL
                         desktopPreview.innerHTML = `<img src="${activeImgUrl}" class="w-full h-full object-contain bg-black">`;
                         desktopPreview.style.opacity = '1';
                     }
@@ -367,7 +381,6 @@
                         const mobileModal = document.getElementById('mobileCardModal');
                         const modalContainer = document.getElementById('modalImageContainer');
                         
-                        // Mobile modal now respects the selected variant image perfectly too
                         modalContainer.innerHTML = `<img src="${activeImgUrl}" class="w-full h-full object-contain bg-black">`;
                         mobileModal.classList.remove('opacity-0', 'pointer-events-none');
                         mobileModal.classList.add('opacity-100', 'pointer-events-auto');
@@ -375,10 +388,9 @@
                         removeCardFromDeck(card, type);
                     }
                 });
-                // -----------------------------------------
                 
                 wrapper.appendChild(img);
-            
+
                 if (card.imagesList.length > 1) {
                     const swapButton = document.createElement('button');
                     swapButton.className = "absolute bottom-1 right-1 bg-black/70 hover:bg-black text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 opacity-90 transition sm:opacity-0 sm:group-hover:opacity-100";
@@ -387,7 +399,7 @@
                     swapButton.addEventListener('click', (e) => cycleCardArtwork(e, index, type));
                     wrapper.appendChild(swapButton);
                 }
-            
+
                 return wrapper;
             }
 
@@ -395,17 +407,16 @@
             localDeck.extra.forEach((card, idx) => extraGrid.appendChild(buildCardContainer(card, idx, 'extra')));
             localDeck.side.forEach((card, idx) => sideGrid.appendChild(buildCardContainer(card, idx, 'side')));
 
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(localDeck));
+            // Fire scoped data structures sync handlers
+            saveToLocalStorage();
+            updateDeckSwitcherUI();
         }
 
         function sortDeck() {
             const sortMainAndSide = (a, b) => {
                 const weightA = a.superType.toLowerCase().includes('spell') ? 2 : a.superType.toLowerCase().includes('trap') ? 3 : 1;
                 const weightB = b.superType.toLowerCase().includes('spell') ? 2 : b.superType.toLowerCase().includes('trap') ? 3 : 1;
-                
-                if (weightA !== weightB) {
-                    return weightA - weightB;
-                }
+                if (weightA !== weightB) return weightA - weightB;
                 return a.name.localeCompare(b.name);
             };
 
@@ -424,25 +435,59 @@
             localDeck.extra.sort((a, b) => {
                 const weightA = getExtraDeckWeight(a.superType);
                 const weightB = getExtraDeckWeight(b.superType);
-
-                if (weightA !== weightB) {
-                    return weightA - weightB;
-                }
+                if (weightA !== weightB) return weightA - weightB;
                 return a.name.localeCompare(b.name);
             });
 
             renderDeckView();
         }
 
+        // Action Bindings and Interactive Global Observers
         document.getElementById('searchBtn').addEventListener('click', searchCards);
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') searchCards();
         });
+        
         document.getElementById('clearBtn').addEventListener('click', () => {
             localDeck.main = []; localDeck.extra = []; localDeck.side = [];
             renderDeckView();
         });
+        
         document.getElementById('sortBtn').addEventListener('click', sortDeck);
+
+        // Input Observers for Profile Title Tracking
+        document.getElementById('boxNameInput').addEventListener('input', () => {
+            saveToLocalStorage();
+            const switcher = document.getElementById('deckSwitcher');
+            if (switcher && switcher.options[switcher.selectedIndex]) {
+                switcher.options[switcher.selectedIndex].text = document.getElementById('boxNameInput').value.trim() || "Unnamed Deck Profile";
+            }
+        });
+
+        // Dropdown Switcher Index Trigger Logic
+        document.getElementById('deckSwitcher').addEventListener('change', (e) => {
+            saveToLocalStorage();
+            activeDeckId = e.target.value;
+            const selected = deckCollection.find(d => d.id === activeDeckId);
+            if (selected) {
+                localDeck = selected.data;
+                renderDeckView();
+            }
+        });
+
+        // Add Deck Allocation Factory Instance Call Handler
+        document.getElementById('newDeckBtn').addEventListener('click', () => {
+            saveToLocalStorage();
+            activeDeckId = 'deck_' + Date.now();
+            const newProfile = {
+                id: activeDeckId,
+                name: `Custom Deck List ${deckCollection.length + 1}`,
+                data: { main: [], extra: [], side: [] }
+            };
+            deckCollection.push(newProfile);
+            localDeck = newProfile.data;
+            renderDeckView();
+        });
         
         function closeMobileModal() {
             const mobileModal = document.getElementById('mobileCardModal');
@@ -462,10 +507,7 @@
             if (!activeModalTarget.id) return;
             const currentCount = localDeck[activeModalTarget.type].filter(c => c.id === activeModalTarget.id).length;
             document.getElementById('modalQuantityDisplay').innerText = currentCount;
-            
-            if (currentCount === 0) {
-                closeMobileModal();
-            }
+            if (currentCount === 0) closeMobileModal();
         }
         
         document.getElementById('modalPlusBtn').addEventListener('click', (e) => {
@@ -494,7 +536,6 @@
         document.getElementById('modalMinusBtn').addEventListener('click', (e) => {
             e.stopPropagation();
             const type = activeModalTarget.type;
-            
             const targetIdx = localDeck[type].findLastIndex(c => c.id === activeModalTarget.id);
             if (targetIdx !== -1) {
                 localDeck[type].splice(targetIdx, 1);
@@ -506,13 +547,12 @@
         document.getElementById('modalDeleteBtn').addEventListener('click', (e) => {
             e.stopPropagation();
             const type = activeModalTarget.type;
-            
             localDeck[type] = localDeck[type].filter(c => c.id !== activeModalTarget.id);
-            
             renderDeckView();
             closeMobileModal();
         });
         
+        // Boot execution
         renderDeckView();
     </script>
 </body>
