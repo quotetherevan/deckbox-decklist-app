@@ -44,44 +44,54 @@
             </section>
 
             <section class="lg:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col h-[850px] overflow-y-auto space-y-6">
-                <div class="border-b pb-4">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div class="flex flex-wrap items-center gap-3 flex-1">
-                            <div class="flex flex-col min-w-[200px]">
+                <div class="border-b pb-4 space-y-4">
+                    <!-- ROW 1: DECK NAME INPUT & WIDENED DECK SELECTOR -->
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex flex-wrap items-center gap-4 flex-1">
+                            <!-- Deck Name Input -->
+                            <div class="flex flex-col min-w-[220px]">
                                 <label for="boxNameInput" class="text-[9px] font-black uppercase tracking-wider text-gray-400 mb-0.5">Deck Profile Name</label>
                                 <input type="text" id="boxNameInput" placeholder="Enter Deck Profile Name..." 
                                        class="text-xl font-extrabold text-gray-900 border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none pb-1">
                             </div>
                             
-                            <div class="flex flex-col pt-3">
-                                <label for="formatSelector" class="text-[9px] font-black uppercase tracking-wider text-gray-400 mb-0.5">Format Ruleset</label>
-                                <select id="formatSelector" class="border rounded-lg text-xs bg-indigo-50 border-indigo-200 px-2 py-1.5 font-bold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <option value="advanced">Advanced Format (2026)</option>
-                                    <option value="edison">Edison Format (2010)</option>
-                                    <option value="genisys">Genisys Format (Points)</option>
-                                    <option value="goat">GOAT Format (2005)</option>
-                                    <option value="ocg">OCG Format</option>
-                                    <option value="unrestricted">Other / Unrestricted Sandbox</option>
-                                </select>
-                            </div>
-
-                            <div class="flex flex-col pt-3">
-                                <label class="text-[9px] font-black uppercase tracking-wider text-gray-400 mb-0.5">Profile Selector</label>
-                                <select id="deckSwitcher" class="border rounded-lg text-xs bg-gray-50 px-2 py-1.5 font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                            <!-- Widened Deck Selector -->
+                            <div class="flex flex-col min-w-[260px] sm:min-w-[300px] max-w-full">
+                                <label for="deckSwitcher" class="text-[9px] font-black uppercase tracking-wider text-gray-400 mb-0.5">Deck Selector</label>
+                                <select id="deckSwitcher" class="w-full border rounded-lg text-xs bg-gray-50 px-3 py-2 font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 truncate"></select>
                             </div>
                             
-                            <div class="flex flex-col pt-3">
-                                <label class="text-[9px] font-black uppercase tracking-wider transparent select-none text-transparent mb-0.5">Control</label>
-                                <button id="newDeckBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs transition flex items-center gap-1">
+                            <!-- Actions / Create Button -->
+                            <div class="flex items-end self-stretch md:self-auto h-full pt-4 md:pt-0">
+                                <button id="newDeckBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-lg text-xs transition flex items-center gap-1.5 whitespace-nowrap">
                                     <i class="fa-solid fa-plus"></i> New Deck
                                 </button>
                             </div>
                         </div>
-                        <button id="clearBtn" class="text-xs text-red-500 hover:underline font-semibold self-end sm:self-center">Clear Box</button>
+                        
+                        <!-- Clear Button -->
+                        <button id="clearBtn" class="text-xs text-red-500 hover:underline font-semibold self-start md:self-end mb-1">Clear Box</button>
                     </div>
-                    <p class="text-xs text-gray-400 mt-2">Dynamic Web Path: <span class="underline text-blue-500">yourdomain.com/deck/db-local</span></p>
-                </div>
 
+                    <!-- ROW 2: DEDICATED FORMAT RULESET SELECTOR & PATH INFO -->
+                    <div class="pt-2 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <p class="text-xs text-gray-400 order-2 sm:order-1">Dynamic Web Path: <span class="underline text-blue-500">yourdomain.com/deck/db-local</span></p>
+                        
+                        <!-- Dedicated Ruleset Container -->
+                        <div class="flex items-center gap-2 self-start sm:self-auto order-1 sm:order-2">
+                            <label for="formatSelector" class="text-[10px] font-bold uppercase tracking-wider text-gray-500 whitespace-nowrap">Active Ruleset:</label>
+                            <select id="formatSelector" class="border rounded-lg text-xs bg-indigo-50 border-indigo-200 px-3 py-1.5 font-bold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="advanced">Advanced Format (2026)</option>
+                                <option value="edison">Edison Format (2010)</option>
+                                <option value="genisys">Genisys Format (Points)</option>
+                                <option value="goat">GOAT Format (2005)</option>
+                                <option value="ocg">OCG Format</option>
+                                <option value="unrestricted">Other / Unrestricted Sandbox</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="flex items-center gap-4">
                         <div>
