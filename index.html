@@ -556,6 +556,10 @@
             
                 // Formulate Overlay Visual Badging Elements
                 const legalCheck = evaluateCardLegality(card.name, card.superType, card.apiBanStatus, card.releasedDate);
+                // TEMPORARY DEBUG LOG
+                if (card.name.includes("Droll")) {
+                    console.log("Droll Legality Object:", legalCheck);
+                }
 
                 // Normalize the reason to lowercase for foolproof string matching
                 const normalizedReason = (legalCheck.reason || "").toLowerCase();
